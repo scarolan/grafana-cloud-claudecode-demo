@@ -178,28 +178,16 @@ flowchart LR
     subgraph OpenTelemetry
         TH["trace_hook.py"]
     end
-    subgraph Grafana Cloud — AWS-hosted
+    subgraph GC_sub["Grafana Cloud (AWS-hosted)"]
         GC["Tempo + Dashboard"]
     end
 
-    CC -->|"Tool calls"| TH
-    TH -->|"OTLP export"| GC
+    CC -->|Tool calls| TH
+    TH -->|OTLP export| GC
 
-    CC -.-> TE["Tool Execution
-    Read files
-    Edit code
-    Run commands
-    Agent calls"]
-    TH -.-> SC["Span Creation
-    Context capture
-    Duration metrics
-    Error tracking
-    Session correlation"]
-    GC -.-> VZ["Visualization
-    Real-time dash
-    Performance analysis
-    Workflow patterns
-    Historical trends"]
+    CC -.-> TE["Tool Execution\nRead files\nEdit code\nRun commands\nAgent calls"]
+    TH -.-> SC["Span Creation\nContext capture\nDuration metrics\nError tracking\nSession correlation"]
+    GC -.-> VZ["Visualization\nReal-time dash\nPerformance analysis\nWorkflow patterns\nHistorical trends"]
 ```
 
 **Key Integration Points:**
