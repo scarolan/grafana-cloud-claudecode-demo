@@ -69,25 +69,25 @@ prometheus.scrape "alloy_self" {
 // }
 
 // =============================================================================
-// Traces — OTLP to Grafana Cloud Tempo (uncomment when your demo needs traces)
+// Traces — OTLP to Grafana Cloud Tempo
 // =============================================================================
-// otelcol.auth.basic "grafana_cloud" {
-//   username = env("GRAFANA_TRACES_USERNAME")
-//   password = env("GRAFANA_CLOUD_TOKEN")
-// }
-//
-// otelcol.exporter.otlp "grafana_cloud" {
-//   client {
-//     endpoint = env("GRAFANA_TRACES_URL")
-//     auth     = otelcol.auth.basic.grafana_cloud.handler
-//   }
-// }
-//
-// otelcol.receiver.otlp "default" {
-//   grpc { endpoint = "0.0.0.0:4317" }
-//   http { endpoint = "0.0.0.0:4318" }
-//
-//   output {
-//     traces = [otelcol.exporter.otlp.grafana_cloud.input]
-//   }
-// }
+otelcol.auth.basic "grafana_cloud" {
+  username = env("GRAFANA_TRACES_USERNAME")
+  password = env("GRAFANA_CLOUD_TOKEN")
+}
+
+otelcol.exporter.otlp "grafana_cloud" {
+  client {
+    endpoint = env("GRAFANA_TRACES_URL")
+    auth     = otelcol.auth.basic.grafana_cloud.handler
+  }
+}
+
+otelcol.receiver.otlp "default" {
+  grpc { endpoint = "0.0.0.0:4317" }
+  http { endpoint = "0.0.0.0:4318" }
+
+  output {
+    traces = [otelcol.exporter.otlp.grafana_cloud.input]
+  }
+}

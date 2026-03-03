@@ -62,3 +62,4 @@ To import a dashboard from this repo into your Grafana Cloud instance:
 | File | Description |
 |------|-------------|
 | `example-mssql-overview.json` | Reference dashboard from MSSQL demo — server health, queries, latency, logs |
+| `claude-code-traces.json` | Claude Code OpenTelemetry tracing dashboard — tool usage, session flows, performance metrics |

@@ -1,4 +1,4 @@
-.PHONY: help preflight start stop test test-preflight test-smoke test-telemetry load-test clean
+.PHONY: help preflight start stop test test-preflight test-smoke test-telemetry test-traces load-test clean
 
 help: ## Show this help message
 	@echo "Demo Builder — Available targets:"
@@ -15,7 +15,7 @@ start: ## Start the demo (preflight → terraform → docker → health check)
 stop: ## Stop the demo (docker down → terraform destroy)
 	@./scripts/stop-demo.sh
 
-test: test-preflight test-smoke test-telemetry ## Run all tests
+test: test-preflight test-smoke test-telemetry test-traces ## Run all tests
 
 test-preflight: ## Run preflight tests
 	@bats tests/preflight.bats
@@ -25,6 +25,10 @@ test-smoke: ## Run smoke tests (containers running and healthy)
 
 test-telemetry: ## Run telemetry tests (metrics flowing to Grafana Cloud)
 	@bats tests/telemetry.bats
+
+test-traces: ## Test Claude Code tracing to Grafana Cloud
+	@echo "Testing Claude Code OpenTelemetry tracing..."
+	@bash check-tracing-setup.sh
 
 load-test: ## Run k6 load test (inside Docker network)
 	@docker compose --profile load-test run --rm k6 run /scripts/load-test.js

@@ -79,6 +79,62 @@ make load-test      # Generate traffic (optional)
 make stop           # Tear down when done
 ```
 
+## 🎯 Extra Credit: Claude Code Tracing
+
+**Optional advanced feature - no Python required for main workshop!**
+
+This repository includes an OpenTelemetry tracing addon that instruments Claude Code sessions, sending detailed traces to Grafana Cloud. Perfect for instructor demonstrations and advanced students who want to explore observability of AI tooling.
+
+### What It Does
+
+- **Traces Every Tool Call**: Read, Write, Edit, Bash, Glob, Grep, Agent → trace spans
+- **Performance Metrics**: Execution time, result sizes, error rates
+- **Session Correlation**: All spans linked within each Claude Code session
+- **Privacy Safe**: File paths sanitized, commands redacted for secrets
+- **Zero Impact**: Main workshop works normally even without Python
+
+### Quick Check
+
+```bash
+# Check if tracing addon is ready (works on any system)
+bash check-tracing-setup.sh
+```
+
+### Setup for Tracing (Students: Optional!)
+
+**If you want to see Claude Code traces in Grafana Cloud:**
+
+1. **Install Python** (any recent version)
+2. **Install tracing packages:**
+   ```bash
+   pip install opentelemetry-distro opentelemetry-exporter-otlp
+   ```
+3. **Verify setup:** `bash check-tracing-setup.sh`
+4. **Use Claude Code normally** - traces flow automatically!
+
+**How it works internally:**
+- `.claude/settings.json` hooks activate when Python is available
+- `trace_hook.py` instruments tool calls → OpenTelemetry spans
+- Direct export to Grafana Cloud OTLP gateway (no Alloy needed)
+- Graceful fallback when Python unavailable (no errors)
+
+### Dashboard Import
+
+1. Open your Grafana Cloud instance
+2. Go to **Dashboards** → **New** → **Import**
+3. Upload `dashboards/claude-code-traces.json`
+4. Configure your Tempo data source
+5. Explore Claude Code session traces in real-time!
+
+### Demo Flow
+
+1. **Start a Claude Code session** in this directory
+2. **Use Claude Code normally** - every tool call creates traces
+3. **Open the dashboard** to see real-time trace data
+4. **Show workflow patterns** - tool usage, performance, session flows
+
+Perfect for demonstrating how modern AI tooling can be observed and optimized just like any other distributed system.
+
 ## Template Structure
 
 ```
