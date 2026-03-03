@@ -379,7 +379,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | avg_over_time(duration) by(span.tool.name)",
+          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | avg_over_time(span:duration) by(span.tool.name)",
           "queryType": "traceqlmetrics",
           "refId": "A"
         }
@@ -484,7 +484,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | quantile_over_time(duration, 0.95) by(span.tool.name)",
+          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | quantile_over_time(span:duration, .95) by(span.tool.name)",
           "queryType": "traceqlmetrics",
           "refId": "A"
         }
@@ -572,7 +572,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\" && status=error} | rate()",
+          "query": "{resource.service.name=\"claude-code\" && span:status=error} | rate()",
           "queryType": "traceqlmetrics",
           "refId": "A"
         }
