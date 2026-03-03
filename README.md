@@ -44,6 +44,30 @@ This module is designed for **Windows workshop environments** with minimal depen
 
 ## 🚀 Quick Start
 
+### **Students: Want Real-Time Tracing?**
+
+📖 **[SUPER SIMPLE 5-MINUTE SETUP GUIDE →](WORKSHOP_SETUP.md)**
+
+**TL;DR:**
+1. Install Python (1 command)
+2. Copy your Grafana credentials to `.env`
+3. Install 2 packages (`pip install` command)
+4. Import dashboard
+5. **Start using Claude Code → see traces!** ✨
+
+### **Instructors: Workshop Ready**
+
+The repository works **immediately** for demonstrations:
+- Import `dashboards/claude-code-traces.json`
+- Start Claude Code session
+- Show real-time traces (if Python installed)
+- **Zero setup needed** for core workshop content
+
+### **Advanced: Full Setup**
+
+<details>
+<summary>Detailed technical setup (click to expand)</summary>
+
 ### Step 1: Clone the Workshop Repository
 
 ```bash
@@ -68,8 +92,6 @@ GRAFANA_OTLP_INSTANCE_ID=123456
 bash check-tracing-setup.sh
 ```
 
-This validates your environment and shows what's available.
-
 ### Step 4: Import the Dashboard
 
 1. **Open your Grafana Cloud instance** (provided by instructor)
@@ -79,8 +101,6 @@ This validates your environment and shows what's available.
 
 ### Step 5: Start Tracing (Optional Enhancement)
 
-**For students who want to see real-time traces:**
-
 ```bash
 # Install Python tracing packages (Windows)
 pip install opentelemetry-distro opentelemetry-exporter-otlp
@@ -89,14 +109,13 @@ pip install opentelemetry-distro opentelemetry-exporter-otlp
 bash check-tracing-setup.sh
 ```
 
-**Without Python:** The workshop content works normally, no errors or missing functionality.
-
 ### Step 6: Use Claude Code & Observe
 
 1. **Start a Claude Code session** in this directory
 2. **Use Claude Code normally** - read files, edit code, run commands
 3. **Open your dashboard** - watch traces appear in real-time!
-4. **Explore patterns** - tool usage, performance, workflow optimization
+
+</details>
 
 ---
 
