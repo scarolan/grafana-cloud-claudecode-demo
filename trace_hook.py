@@ -163,16 +163,31 @@ def _extract_attrs(tool_name, tool_input):
     attrs = {}
     if not isinstance(tool_input, dict):
         return attrs
+
+    # Tool-specific attributes
     if tool_name in ("Read", "Write"):
         attrs["tool.file_path"] = _sanitize_path(str(tool_input.get("file_path", "")))
     elif tool_name == "Edit":
         attrs["tool.file_path"] = _sanitize_path(str(tool_input.get("file_path", "")))
     elif tool_name == "Bash":
         attrs["tool.command"] = _sanitize_cmd(str(tool_input.get("command", "")))[:200]
+        if tool_input.get("description"):
+            attrs["tool.description"] = str(tool_input["description"])[:200]
     elif tool_name in ("Grep", "Glob"):
         attrs["tool.pattern"] = str(tool_input.get("pattern", ""))[:200]
     elif tool_name == "Agent":
         attrs["tool.agent_type"] = str(tool_input.get("subagent_type", ""))
+        if tool_input.get("description"):
+            attrs["tool.description"] = str(tool_input["description"])[:200]
+
+    # Common enrichment: input size and background flag
+    try:
+        attrs["tool.input_size"] = len(json.dumps(tool_input))
+    except (TypeError, ValueError):
+        pass
+    if tool_input.get("run_in_background"):
+        attrs["tool.background"] = True
+
     return attrs
 
 
@@ -216,9 +231,19 @@ def handle_post(hook_data, is_error=False):
             tool_input = {}
     attrs.update(_extract_attrs(tool_name, tool_input))
 
+    # Capture response size (available in both success and failure)
+    tool_response = hook_data.get("tool_response", "")
+    if isinstance(tool_response, dict):
+        try:
+            attrs["tool.response_size"] = len(json.dumps(tool_response))
+        except (TypeError, ValueError):
+            pass
+    elif isinstance(tool_response, str):
+        attrs["tool.response_size"] = len(tool_response)
+
     # Capture error message on failure
     if is_error:
-        resp = hook_data.get("tool_response", "")
+        resp = tool_response
         if isinstance(resp, dict):
             resp = json.dumps(resp)
         attrs["tool.error"] = str(resp)[:500]
