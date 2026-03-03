@@ -41,7 +41,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style='padding: 16px; background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: space-between;'>\n  <div>\n    <h1 style='margin: 0 0 8px 0; font-size: 24px; font-weight: 600;'>🤖 Claude Code Tracing Dashboard</h1>\n    <p style='margin: 0; font-size: 14px; opacity: 0.9;'>Real-time observability for AI-powered development workflows</p>\n  </div>\n  <div style='display: flex; align-items: center; gap: 12px;'>\n    <div style='text-align: right; font-size: 12px; opacity: 0.8;'>\n      <div>OpenTelemetry</div>\n      <div>Distributed Tracing</div>\n    </div>\n    <div style='width: 3px; height: 40px; background: rgba(255,255,255,0.3); border-radius: 2px;'></div>\n    <div style='font-size: 36px;'>⚡</div>\n  </div>\n</div>",
+        "content": "<div style='padding: 16px; background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: space-between;'>\n  <div>\n    <h1 style='margin: 0 0 8px 0; font-size: 24px; font-weight: 600;'>Claude Code Tracing Dashboard</h1>\n    <p style='margin: 0; font-size: 14px; opacity: 0.9;'>Real-time observability for AI-powered development workflows</p>\n  </div>\n  <div style='display: flex; align-items: center; gap: 12px;'>\n    <div style='text-align: right; font-size: 12px; opacity: 0.8;'>\n      <div>OpenTelemetry</div>\n      <div>Distributed Tracing</div>\n    </div>\n    <div style='width: 3px; height: 40px; background: rgba(255,255,255,0.3); border-radius: 2px;'></div>\n  </div>\n</div>",
         "mode": "html"
       },
       "pluginVersion": "9.0.0",
@@ -66,7 +66,7 @@
         "type": "tempo",
         "uid": "${DS_TEMPO}"
       },
-      "description": "Total number of Claude Code tool calls over time",
+      "description": "Rate of Claude Code tool calls over time, broken down by tool type",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -137,12 +137,12 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\"} | rate() by (span.tool.name)",
-          "queryType": "traceql",
+          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | rate()",
+          "queryType": "traceqlmetrics",
           "refId": "A"
         }
       ],
-      "title": "Tool Calls per Second",
+      "title": "Tool Calls Rate",
       "type": "timeseries"
     },
     {
@@ -150,88 +150,7 @@
         "type": "tempo",
         "uid": "${DS_TEMPO}"
       },
-      "description": "Active Claude Code sessions",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 5
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "tempo",
-            "uid": "${DS_TEMPO}"
-          },
-          "query": "{resource.service.name=\"claude-code\"} | count by (span.session.id)",
-          "queryType": "traceql",
-          "refId": "A"
-        }
-      ],
-      "title": "Active Sessions",
-      "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 13
-      },
-      "id": 4,
-      "panels": [],
-      "title": "Tool Usage Patterns",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "tempo",
-        "uid": "${DS_TEMPO}"
-      },
-      "description": "Distribution of tool usage by type",
+      "description": "Total tool calls by type",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -251,10 +170,10 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 14
+        "x": 12,
+        "y": 5
       },
-      "id": 5,
+      "id": 3,
       "options": {
         "legend": {
           "displayMode": "list",
@@ -264,7 +183,7 @@
         "pieType": "pie",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "sum"
           ],
           "fields": "",
           "values": false
@@ -279,13 +198,110 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\"} | count by (span.tool.name)",
-          "queryType": "traceql",
+          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | count_over_time() by(span.tool.name)",
+          "queryType": "traceqlmetrics",
           "refId": "A"
         }
       ],
       "title": "Tool Usage Distribution",
       "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 4,
+      "panels": [],
+      "title": "Tool Usage Patterns",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "Tool call count over time by type",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
+          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | count_over_time() by(span.tool.name)",
+          "queryType": "traceqlmetrics",
+          "refId": "A"
+        }
+      ],
+      "title": "Tool Calls Over Time",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -336,7 +352,7 @@
               }
             ]
           },
-          "unit": "ms"
+          "unit": "ns"
         },
         "overrides": []
       },
@@ -363,13 +379,13 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\"} | avg(duration) by (span.tool.name)",
-          "queryType": "traceql",
+          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | avg_over_time(duration) by(span.tool.name)",
+          "queryType": "traceqlmetrics",
           "refId": "A"
         }
       ],
       "title": "Average Tool Duration",
-      "type": "barchart"
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -389,7 +405,7 @@
         "type": "tempo",
         "uid": "${DS_TEMPO}"
       },
-      "description": "P95 tool execution times",
+      "description": "P95 tool execution latency over time",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -433,15 +449,15 @@
               },
               {
                 "color": "yellow",
-                "value": 1000
+                "value": 1000000000
               },
               {
                 "color": "red",
-                "value": 5000
+                "value": 5000000000
               }
             ]
           },
-          "unit": "ms"
+          "unit": "ns"
         },
         "overrides": []
       },
@@ -468,8 +484,8 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\"} | quantile_over_time(duration, 0.95) by (span.tool.name)",
-          "queryType": "traceql",
+          "query": "{resource.service.name=\"claude-code\" && name=~\"tool:.*\"} | quantile_over_time(duration, 0.95) by(span.tool.name)",
+          "queryType": "traceqlmetrics",
           "refId": "A"
         }
       ],
@@ -481,7 +497,7 @@
         "type": "tempo",
         "uid": "${DS_TEMPO}"
       },
-      "description": "Tool execution error rate",
+      "description": "Rate of errored tool calls by tool type",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -512,12 +528,10 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "line"
+              "mode": "off"
             }
           },
           "mappings": [],
-          "max": 1,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -526,16 +540,12 @@
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 0.01
-              },
-              {
                 "color": "red",
                 "value": 0.05
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -562,12 +572,12 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\" && status=error} | rate() by (span.tool.name)",
-          "queryType": "traceql",
+          "query": "{resource.service.name=\"claude-code\" && status=error} | rate()",
+          "queryType": "traceqlmetrics",
           "refId": "A"
         }
       ],
-      "title": "Error Rate by Tool",
+      "title": "Error Rate",
       "type": "timeseries"
     },
     {
@@ -588,101 +598,30 @@
         "type": "tempo",
         "uid": "${DS_TEMPO}"
       },
-      "description": "Recent Claude Code traces - click to explore",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "filterable": true,
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Duration"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Status"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode",
-                "value": "color-background"
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "ok": {
-                        "color": "green",
-                        "index": 0
-                      },
-                      "error": {
-                        "color": "red",
-                        "index": 1
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
+      "description": "Recent Claude Code traces - click a trace ID to view the full waterfall",
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 24,
         "x": 0,
         "y": 32
       },
       "id": 11,
-      "options": {
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Start Time"
-          }
-        ]
-      },
-      "pluginVersion": "9.0.0",
+      "options": {},
       "targets": [
         {
           "datasource": {
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{resource.service.name=\"claude-code\"} | select(span.tool.name, span.session.id, duration, status)",
+          "limit": 20,
+          "query": "{resource.service.name=\"claude-code\"}",
           "queryType": "traceql",
-          "refId": "A"
+          "refId": "A",
+          "tableType": "traces"
         }
       ],
-      "title": "Recent Tool Executions",
-      "type": "table"
+      "title": "Recent Traces",
+      "type": "traces"
     }
   ],
   "refresh": "30s",
@@ -699,8 +638,8 @@
       {
         "current": {
           "selected": false,
-          "text": "Tempo",
-          "value": "tempo-uid"
+          "text": "grafanacloud-scarolan-traces",
+          "value": "grafanacloud-scarolan-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -713,31 +652,6 @@
         "regex": "",
         "skipUrlSync": false,
         "type": "datasource"
-      },
-      {
-        "allValue": "",
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "tempo",
-          "uid": "${DS_TEMPO}"
-        },
-        "definition": "",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Session ID",
-        "multi": true,
-        "name": "session_id",
-        "options": [],
-        "query": "{resource.service.name=\"claude-code\"} | by (span.session.id)",
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
       }
     ]
   },

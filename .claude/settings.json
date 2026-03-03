@@ -1,13 +1,38 @@
 {
   "hooks": {
-    "tool-start": {
-      "command": "python trace_hook.py --hook tool-start",
-      "description": "Start OpenTelemetry trace span for tool execution"
-    },
-    "tool-end": {
-      "command": "python trace_hook.py --hook tool-end",
-      "description": "End OpenTelemetry trace span for tool execution"
-    }
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/trace_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/trace_hook.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/trace_hook.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   },
   "permissions": {
     "allow": [
