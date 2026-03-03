@@ -24,12 +24,37 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "grafana",
+        "uid": "-- Grafana --"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "options": {
+        "code": {
+          "language": "html",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style='padding: 16px; background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: space-between;'>\n  <div>\n    <h1 style='margin: 0 0 8px 0; font-size: 24px; font-weight: 600;'>🤖 Claude Code Tracing Dashboard</h1>\n    <p style='margin: 0; font-size: 14px; opacity: 0.9;'>Real-time observability for AI-powered development workflows</p>\n  </div>\n  <div style='display: flex; align-items: center; gap: 12px;'>\n    <div style='text-align: right; font-size: 12px; opacity: 0.8;'>\n      <div>OpenTelemetry</div>\n      <div>Distributed Tracing</div>\n    </div>\n    <div style='width: 3px; height: 40px; background: rgba(255,255,255,0.3); border-radius: 2px;'></div>\n    <div style='font-size: 36px;'>⚡</div>\n  </div>\n</div>",
+        "mode": "html"
+      },
+      "pluginVersion": "9.0.0",
+      "title": "",
+      "type": "text"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 4
       },
       "id": 1,
       "panels": [],
@@ -93,7 +118,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 1
+        "y": 5
       },
       "id": 2,
       "options": {
@@ -156,7 +181,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 1
+        "y": 5
       },
       "id": 3,
       "options": {
@@ -194,7 +219,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 13
       },
       "id": 4,
       "panels": [],
@@ -227,7 +252,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 10
+        "y": 14
       },
       "id": 5,
       "options": {
@@ -319,7 +344,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 10
+        "y": 14
       },
       "id": 6,
       "options": {
@@ -352,7 +377,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 22
       },
       "id": 7,
       "panels": [],
@@ -424,7 +449,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 19
+        "y": 23
       },
       "id": 8,
       "options": {
@@ -518,7 +543,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 19
+        "y": 23
       },
       "id": 9,
       "options": {
@@ -551,7 +576,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 31
       },
       "id": 10,
       "panels": [],
@@ -632,7 +657,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 32
       },
       "id": 11,
       "options": {
