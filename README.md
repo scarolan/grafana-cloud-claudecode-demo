@@ -172,7 +172,7 @@ Perfect for showing how **AI systems integrate with traditional observability**:
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Claude Code   │──▶│  OpenTelemetry  │───▶│  Grafana Cloud  │
+│   Claude Code   │ ──▶│  OpenTelemetry  │───▶│  Grafana Cloud  │
 │   (Anthropic)   │    │   (trace_hook)  │    │   (AWS-hosted)  │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
         │                       │                       │
