@@ -36,7 +36,12 @@ def _load_env():
                 continue
             key, _, value = line.partition("=")
             key, value = key.strip(), value.strip()
-            if key and key not in os.environ:
+            # Always override GRAFANA_/TRACE_ vars from .env — the shell
+            # environment may contain unrelated tokens (e.g. MCP service
+            # account keys) that don't work for OTLP gateway auth.
+            if key and (key.startswith("GRAFANA_") or key.startswith("TRACE_")):
+                os.environ[key] = value
+            elif key and key not in os.environ:
                 os.environ[key] = value
 
 _load_env()
