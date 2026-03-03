@@ -1,205 +1,267 @@
-# Demo Builder
+# AWS + Anthropic Claude Code Workshop: Advanced Observability
 
-A template for Grafana SEs to rapidly build customer demos that ship telemetry (metrics, logs, traces) to Grafana Cloud.
+🤖 **Welcome to the advanced observability module** of the AWS + Anthropic Claude Code workshop! This hands-on extension demonstrates how to instrument AI-powered development workflows with OpenTelemetry distributed tracing.
 
-**How it works:** Copy this template, describe your demo scenario to Claude Code, and it builds out the infrastructure, telemetry pipeline, and tests for you.
+**What you'll learn:** How modern AI tooling can be observed, monitored, and optimized using the same techniques we apply to distributed systems - all powered by Grafana Cloud and AWS infrastructure.
 
-## Prerequisites
+---
 
-| Tool | Required | Install |
-|------|----------|---------|
-| Make | Yes | Pre-installed on macOS/Linux; WSL: `sudo apt install make` |
-| Docker Desktop | Yes | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/) |
-| GitHub CLI (`gh`) | Yes | [cli.github.com](https://cli.github.com/) |
-| Claude Code | Yes | [docs.anthropic.com/claude-code](https://docs.anthropic.com/en/docs/claude-code) |
-| Terraform | If demo needs cloud resources | [terraform.io/downloads](https://www.terraform.io/downloads) |
-| k6 | For load testing | [grafana.com/docs/k6](https://grafana.com/docs/k6/latest/set-up/install-k6/) |
-| BATS | For running tests | [github.com/bats-core/bats-core](https://github.com/bats-core/bats-core) |
+## 🎯 Workshop Module: Claude Code Tracing
 
-## Quick Start
+This module adds real-time observability to your Claude Code development sessions. Every tool call (Read, Write, Edit, Bash, etc.) becomes a distributed trace span, giving unprecedented visibility into AI-assisted workflows.
 
-### 1. Create your demo repo from this template
+### 🚀 **Core Learning Objectives**
 
-Name it `grafana-cloud-<technology>-demo` (e.g., `grafana-cloud-oracle-demo`, `grafana-cloud-mssql-demo`):
+- **Instrument AI tooling** with OpenTelemetry distributed tracing
+- **Visualize development workflows** in real-time dashboards
+- **Apply observability patterns** to emerging AI/ML systems
+- **Demonstrate AWS + Anthropic + Grafana** integration
+
+### ⚡ **Zero-Setup Experience**
+
+This module is designed for **Windows workshop environments** with minimal dependencies:
+
+- ✅ **Works immediately** - no Python installation required for core functionality
+- ✅ **Graceful enhancement** - add tracing with 2 pip packages if desired
+- ✅ **Enterprise-ready** - follows AWS Well-Architected observability patterns
+- ✅ **Workshop-friendly** - tested on standard AWS Windows EC2 instances
+
+---
+
+## 🛠 Prerequisites
+
+| Tool | Required | Notes |
+|------|----------|-------|
+| **Claude Code** | ✅ Yes | Pre-installed on workshop workstations |
+| **Git** | ✅ Yes | Available via Git Bash on Windows |
+| **Grafana Cloud account** | ✅ Yes | Provided during workshop setup |
+| **Python 3.8+** | 🎯 Optional | Only needed for real-time tracing |
+| **VS Code** | ✅ Yes | Pre-installed on workshop workstations |
+
+*💡 This module works on the standard AWS workshop Windows instances without additional software.*
+
+---
+
+## 🚀 Quick Start
+
+### Step 1: Clone the Workshop Repository
 
 ```bash
-gh repo create grafana-cloud-mytech-demo --template grafana/demo-builder --private
-sleep 5
-gh repo clone grafana-cloud-mytech-demo
-cd grafana-cloud-mytech-demo
+git clone https://github.com/scarolan/grafana-cloud-claudecode-demo
+cd grafana-cloud-claudecode-demo
 ```
 
-### 2. Configure Grafana Cloud credentials
+### Step 2: Configure Your Grafana Cloud Stack
+
+Update `.env` with your workshop-provided Grafana Cloud credentials:
 
 ```bash
-cp .env.example .env
-# Edit .env with your Grafana Cloud credentials
-# Find them at: grafana.com → My Account → Stack details
+# Your instructor will provide these values
+GRAFANA_CLOUD_TOKEN=glc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+GRAFANA_OTLP_GATEWAY_URL=https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+GRAFANA_OTLP_INSTANCE_ID=123456
 ```
 
-### 3. Verify prerequisites
+### Step 3: Verify Setup
 
 ```bash
-make preflight
-```
-
-### 4. Add Grafana MCP server (for dashboards)
-
-Create a Service Account with **Editor** role in your Grafana Cloud instance (Administration > Service Accounts), generate a token, then:
-
-```bash
-claude mcp add --transport stdio grafana \
-    --env GRAFANA_URL=https://your-instance.grafana.net \
-    --env GRAFANA_API_KEY=glsa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-    -- docker run -i --rm \
-      -e GRAFANA_URL \
-      -e GRAFANA_API_KEY \
-      mcp/grafana --transport=stdio
-```
-
-This lets Claude Code create and edit dashboards directly in your Grafana Cloud instance.
-
-### 5. Describe your scenario to Claude Code
-
-```bash
-claude
-```
-
-Tell Claude what you're demoing. For example:
-> "I need a demo showing a Python Flask app with PostgreSQL. The app should expose REST endpoints, emit traces via OpenTelemetry, and I need to show database query metrics in Grafana Cloud."
-
-Claude Code reads `CLAUDE.md` and follows the 10-step workflow to build your demo.
-
-### 6. Start, test, and demo
-
-```bash
-make start          # Start all services
-make test           # Verify everything works
-make load-test      # Generate traffic (optional)
-make stop           # Tear down when done
-```
-
-## 🎯 Extra Credit: Claude Code Tracing
-
-**Optional advanced feature - no Python required for main workshop!**
-
-This repository includes an OpenTelemetry tracing addon that instruments Claude Code sessions, sending detailed traces to Grafana Cloud. Perfect for instructor demonstrations and advanced students who want to explore observability of AI tooling.
-
-### What It Does
-
-- **Traces Every Tool Call**: Read, Write, Edit, Bash, Glob, Grep, Agent → trace spans
-- **Performance Metrics**: Execution time, result sizes, error rates
-- **Session Correlation**: All spans linked within each Claude Code session
-- **Privacy Safe**: File paths sanitized, commands redacted for secrets
-- **Zero Impact**: Main workshop works normally even without Python
-
-### Quick Check
-
-```bash
-# Check if tracing addon is ready (works on any system)
 bash check-tracing-setup.sh
 ```
 
-### Setup for Tracing (Students: Optional!)
+This validates your environment and shows what's available.
 
-**If you want to see Claude Code traces in Grafana Cloud:**
+### Step 4: Import the Dashboard
 
-1. **Install Python** (any recent version)
-2. **Install tracing packages:**
-   ```bash
-   pip install opentelemetry-distro opentelemetry-exporter-otlp
-   ```
-3. **Verify setup:** `bash check-tracing-setup.sh`
-4. **Use Claude Code normally** - traces flow automatically!
+1. **Open your Grafana Cloud instance** (provided by instructor)
+2. **Go to Dashboards** → **New** → **Import**
+3. **Upload** `dashboards/claude-code-traces.json`
+4. **Configure** your Tempo data source when prompted
 
-**How it works internally:**
-- `.claude/settings.json` hooks activate when Python is available
-- `trace_hook.py` instruments tool calls → OpenTelemetry spans
-- Direct export to Grafana Cloud OTLP gateway (no Alloy needed)
-- Graceful fallback when Python unavailable (no errors)
+### Step 5: Start Tracing (Optional Enhancement)
 
-### Dashboard Import
+**For students who want to see real-time traces:**
 
-1. Open your Grafana Cloud instance
-2. Go to **Dashboards** → **New** → **Import**
-3. Upload `dashboards/claude-code-traces.json`
-4. Configure your Tempo data source
-5. Explore Claude Code session traces in real-time!
+```bash
+# Install Python tracing packages (Windows)
+pip install opentelemetry-distro opentelemetry-exporter-otlp
 
-### Demo Flow
+# Verify tracing is active
+bash check-tracing-setup.sh
+```
+
+**Without Python:** The workshop content works normally, no errors or missing functionality.
+
+### Step 6: Use Claude Code & Observe
 
 1. **Start a Claude Code session** in this directory
-2. **Use Claude Code normally** - every tool call creates traces
-3. **Open the dashboard** to see real-time trace data
-4. **Show workflow patterns** - tool usage, performance, session flows
+2. **Use Claude Code normally** - read files, edit code, run commands
+3. **Open your dashboard** - watch traces appear in real-time!
+4. **Explore patterns** - tool usage, performance, workflow optimization
 
-Perfect for demonstrating how modern AI tooling can be observed and optimized just like any other distributed system.
+---
 
-## Template Structure
+## 🎯 Workshop Demo Flow
+
+### **Instructor Demonstration**
+
+Perfect for showing how **AI systems integrate with traditional observability**:
+
+1. **Show the baseline** - Import dashboard, explain the concept
+2. **Live coding session** - Use Claude Code to build something real
+3. **Real-time visualization** - Dashboard updates as tools execute
+4. **Deep dive analysis** - Session correlation, performance patterns
+5. **Enterprise implications** - How this scales to AI-powered teams
+
+### **Student Experience**
+
+**Immediate Value (No Setup):**
+- Complete workshop materials work as expected
+- Professional-grade tracing infrastructure in place
+- Learn observability concepts through AI tooling lens
+
+**Enhanced Experience (2-Minute Setup):**
+- Real-time traces of their own Claude Code usage
+- Hands-on distributed tracing with OpenTelemetry
+- Personal dashboard showing their development patterns
+
+---
+
+## 📊 What Gets Traced
+
+### **Tool Call Instrumentation**
+- **Read operations**: File access patterns, content sizes
+- **Write operations**: Code generation metrics, edit frequencies
+- **Bash commands**: Execution time, success/error rates
+- **Agent interactions**: Sub-agent usage, delegation patterns
+- **Search operations**: Glob/Grep performance and patterns
+
+### **Performance Insights**
+- **P95 latencies** per tool type
+- **Error rates** and failure patterns
+- **Session correlation** across entire workflows
+- **Resource utilization** trends over time
+
+### **Privacy & Security**
+- **Path sanitization** - removes sensitive directories
+- **Command redaction** - filters credentials and secrets
+- **Configurable scope** - trace only what matters
+- **Zero data retention** - all traces flow to your Grafana Cloud
+
+---
+
+## 🏗 Architecture: AWS + Anthropic + Grafana
 
 ```
-├── CLAUDE.md                    # Guide for Claude Code (the brain)
-├── README.md                    # This file
-├── Makefile                     # Task runner (run 'make help')
-├── .env.example                 # Grafana Cloud credentials template
-├── .gitignore                   # Prevents secrets from being committed
-├── docker-compose.yml           # Services (Alloy + your demo apps)
-├── alloy/
-│   └── config.alloy             # Telemetry pipeline configuration
-├── terraform/                   # Cloud infrastructure (when needed)
-│   ├── providers.tf
-│   ├── variables.tf
-│   ├── main.tf
-│   ├── outputs.tf
-│   └── terraform.tfvars.example
-├── scripts/
-│   ├── preflight-check.sh       # Prerequisite verification
-│   ├── start-demo.sh            # Start everything
-│   └── stop-demo.sh             # Stop everything
-├── tests/
-│   ├── README.md                # Testing guide
-│   ├── preflight.bats           # Tool/config checks
-│   ├── smoke.bats               # Service health checks
-│   └── telemetry.bats           # Data flow verification
-├── k6/
-│   ├── README.md                # Load testing guide
-│   └── load-test.js             # k6 load test script
-└── dashboards/
-    └── README.md                # Dashboard export/import instructions
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Claude Code   │───▶│  OpenTelemetry  │───▶│  Grafana Cloud  │
+│   (Anthropic)   │    │   (trace_hook)  │    │   (AWS-hosted)  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+        │                       │                       │
+        ▼                       ▼                       ▼
+   Tool Execution          Span Creation           Visualization
+   • Read files            • Context capture        • Real-time dash
+   • Edit code             • Duration metrics       • Performance analysis
+   • Run commands          • Error tracking         • Workflow patterns
+   • Agent calls           • Session correlation    • Historical trends
 ```
 
-## Conventions
+**Key Integration Points:**
+- **AWS EC2** workshop instances run Claude Code + tracing
+- **Anthropic API** powers Claude Code tool execution
+- **Grafana Cloud** (AWS infrastructure) receives and visualizes traces
+- **OpenTelemetry** standard ensures enterprise compatibility
 
-- **Docker Compose V2** — `docker compose` (space, not hyphen)
-- **Pinned image versions** — no `:latest` tags
-- **Health checks on every service** — enables reliable `depends_on`
-- **All secrets in `.env`** — never hardcoded
-- **Local Terraform state** — demos are ephemeral, no remote backends
-- **BATS for testing** — purpose-built for CLI/infrastructure verification
-- **Dashboards via Grafana MCP** — Claude Code pushes dashboards directly to Grafana Cloud
+---
 
-## Available Make Targets
+## 🎓 Learning Extensions
 
-Run `make help` to see all targets:
+### **For Advanced Students**
 
-| Target | Description |
-|--------|-------------|
-| `make help` | Show available targets |
-| `make preflight` | Run preflight checks |
-| `make start` | Start the demo |
-| `make stop` | Stop the demo |
-| `make test` | Run all tests |
-| `make test-preflight` | Run preflight tests only |
-| `make test-smoke` | Run smoke tests only |
-| `make test-telemetry` | Run telemetry tests only |
-| `make load-test` | Run k6 load test |
-| `make clean` | Remove containers, volumes, networks |
+**Explore the Implementation:**
+```bash
+# Study the tracing implementation
+code trace_hook.py
 
-## Graduating a Demo
+# Examine the dashboard definition
+code dashboards/claude-code-traces.json
 
-When a demo is polished enough to share across the SE team:
+# Review the hooks configuration
+code .claude/settings.json
+```
 
-1. Ensure all tests pass (`make test`)
-2. Update this README with demo-specific documentation
-3. Export and commit dashboards to `dashboards/`
-4. Request transfer to the grafana org via your team lead
+**Custom Scenarios:**
+- **Modify span attributes** - add custom metadata
+- **Create alert rules** - notify on slow operations
+- **Build team dashboards** - aggregate multiple developers
+- **Integrate with CI/CD** - trace automated Claude Code usage
+
+### **Discussion Topics**
+
+- **How does this compare** to traditional APM approaches?
+- **What enterprise patterns** could benefit from AI workflow observability?
+- **How would you scale** this to a team of 100 developers using AI tools?
+- **What other AI/ML systems** could benefit from distributed tracing?
+
+---
+
+## 📚 Workshop Resources
+
+### **Reference Materials**
+- [`trace_hook.py`](trace_hook.py) - OpenTelemetry instrumentation implementation
+- [`dashboards/claude-code-traces.json`](dashboards/claude-code-traces.json) - Grafana dashboard
+- [`.claude/settings.json`](.claude/settings.json) - Hooks configuration
+- [`TRACING_ADDON_SUMMARY.md`](TRACING_ADDON_SUMMARY.md) - Technical implementation details
+
+### **Troubleshooting**
+```bash
+# Check setup status
+bash check-tracing-setup.sh
+
+# Verify environment variables
+env | grep GRAFANA
+
+# Test trace export
+python trace_hook.py --test    # (if Python installed)
+```
+
+### **Additional Workshop Modules**
+- **Container Observability** - Docker + Kubernetes tracing patterns
+- **Database Performance** - SQL query optimization with traces
+- **Frontend Monitoring** - Real User Monitoring with Grafana Cloud
+- **Infrastructure Monitoring** - AWS CloudWatch + Grafana integration
+
+---
+
+## 💼 Enterprise Takeaways
+
+This workshop module demonstrates **production-ready patterns** for observing AI-powered development workflows:
+
+- **OpenTelemetry standards** ensure vendor-neutral observability
+- **AWS infrastructure** provides enterprise-scale data processing
+- **Grafana Cloud** delivers production observability platform
+- **Claude Code hooks** show how to instrument any AI tooling
+- **Zero-impact design** maintains developer productivity
+
+**Business Value:**
+- **Measure AI ROI** - quantify developer productivity improvements
+- **Optimize workflows** - identify bottlenecks in AI-assisted development
+- **Ensure reliability** - monitor AI system performance and availability
+- **Enable debugging** - trace complex multi-agent AI interactions
+
+---
+
+## 🎯 Next Steps
+
+**Continue Your Observability Journey:**
+
+1. **Apply these patterns** to your own AI/ML systems
+2. **Explore Grafana Cloud** advanced features (alerts, SLOs, incidents)
+3. **Integrate with AWS** services (CloudWatch, X-Ray, EventBridge)
+4. **Build team dashboards** for AI-powered development workflows
+5. **Consider enterprise deployment** - how would you scale this organization-wide?
+
+**Questions? Ideas?** The observability community is excited about AI system monitoring. This workshop represents the cutting edge of **AI + Observability** integration.
+
+---
+
+*Built with ❤️ by the AWS + Anthropic + Grafana workshop team*

@@ -1,10 +1,10 @@
-# 🎯 Claude Code Tracing Addon - Implementation Complete
+# 🎯 AWS + Anthropic Workshop Module: Claude Code Tracing
 
-**Status: ✅ READY FOR WORKSHOP DEMO**
+**Status: ✅ READY FOR WORKSHOP DELIVERY**
 
-## What We Built
+## Workshop Module Overview
 
-A complete OpenTelemetry tracing addon that instruments Claude Code sessions and sends traces to Grafana Cloud. Perfect for showing how AI tooling can be observed like any distributed system.
+This advanced observability module for the **AWS + Anthropic Claude Code Workshop** demonstrates how to instrument AI-powered development workflows with enterprise-grade distributed tracing. Students learn to apply traditional observability patterns to emerging AI systems.
 
 ## Components Created
 

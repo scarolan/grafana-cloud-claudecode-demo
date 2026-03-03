@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """
-Claude Code Tracing Hook - OpenTelemetry Instrumentation
+AWS + Anthropic Workshop: Claude Code Tracing Hook
 
-This hook instruments Claude Code sessions with distributed tracing, sending
-traces to Grafana Cloud for visualization. It captures tool calls, their
-duration, parameters, and results as OpenTelemetry spans.
+This workshop module demonstrates enterprise-grade AI system observability
+by instrumenting Claude Code sessions with OpenTelemetry distributed tracing.
+Students learn how modern AI tooling integrates with traditional monitoring.
 
-Usage: Automatically activated via .claude/settings.json hooks configuration.
+Workshop Learning Objectives:
+- Apply distributed tracing to AI systems
+- Understand OpenTelemetry in AI/ML contexts
+- Visualize AI workflows with Grafana Cloud
+- Connect AI systems to enterprise observability
+
+Usage: Automatically activated via .claude/settings.json when Python available.
 """
 
 import os
