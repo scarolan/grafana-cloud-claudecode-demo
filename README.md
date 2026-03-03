@@ -170,18 +170,36 @@ Perfect for showing how **AI systems integrate with traditional observability**:
 
 ## 🏗 Architecture: AWS + Anthropic + Grafana
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Claude Code   │ ──▶│  OpenTelemetry  │───▶│  Grafana Cloud  │
-│   (Anthropic)   │    │   (trace_hook)  │    │   (AWS-hosted)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-        │                       │                       │
-        ▼                       ▼                       ▼
-   Tool Execution          Span Creation           Visualization
-   • Read files            • Context capture        • Real-time dash
-   • Edit code             • Duration metrics       • Performance analysis
-   • Run commands          • Error tracking         • Workflow patterns
-   • Agent calls           • Session correlation    • Historical trends
+```mermaid
+flowchart LR
+    subgraph Anthropic
+        CC["Claude Code"]
+    end
+    subgraph OpenTelemetry
+        TH["trace_hook.py"]
+    end
+    subgraph Grafana Cloud — AWS-hosted
+        GC["Tempo + Dashboard"]
+    end
+
+    CC -->|"Tool calls"| TH
+    TH -->|"OTLP export"| GC
+
+    CC -.-> TE["Tool Execution
+    Read files
+    Edit code
+    Run commands
+    Agent calls"]
+    TH -.-> SC["Span Creation
+    Context capture
+    Duration metrics
+    Error tracking
+    Session correlation"]
+    GC -.-> VZ["Visualization
+    Real-time dash
+    Performance analysis
+    Workflow patterns
+    Historical trends"]
 ```
 
 **Key Integration Points:**
