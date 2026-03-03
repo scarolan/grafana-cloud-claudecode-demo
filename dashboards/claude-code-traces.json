@@ -112,7 +112,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{service.name=\"claude-code\"} | rate() by (tool.name)",
+          "query": "{resource.service.name=\"claude-code\"} | rate() by (span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
         }
@@ -180,7 +180,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{service.name=\"claude-code\"} | count by (session.id)",
+          "query": "{resource.service.name=\"claude-code\"} | count by (span.session.id)",
           "queryType": "traceql",
           "refId": "A"
         }
@@ -254,7 +254,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{service.name=\"claude-code\"} | count by (tool.name)",
+          "query": "{resource.service.name=\"claude-code\"} | count by (span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
         }
@@ -338,7 +338,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{service.name=\"claude-code\"} | avg(duration) by (tool.name)",
+          "query": "{resource.service.name=\"claude-code\"} | avg(duration) by (span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
         }
@@ -443,7 +443,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{service.name=\"claude-code\"} | quantile_over_time(duration, 0.95) by (tool.name)",
+          "query": "{resource.service.name=\"claude-code\"} | quantile_over_time(duration, 0.95) by (span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
         }
@@ -537,7 +537,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{service.name=\"claude-code\" status=error} | rate() by (tool.name) / on(tool.name) {service.name=\"claude-code\"} | rate() by (tool.name)",
+          "query": "{resource.service.name=\"claude-code\" && status=error} | rate() by (span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
         }
@@ -651,7 +651,7 @@
             "type": "tempo",
             "uid": "${DS_TEMPO}"
           },
-          "query": "{service.name=\"claude-code\"} | select(tool.name, session.id, duration, status)",
+          "query": "{resource.service.name=\"claude-code\"} | select(span.tool.name, span.session.id, duration, status)",
           "queryType": "traceql",
           "refId": "A"
         }
@@ -707,7 +707,7 @@
         "multi": true,
         "name": "session_id",
         "options": [],
-        "query": "{service.name=\"claude-code\"} | by (session.id)",
+        "query": "{resource.service.name=\"claude-code\"} | by (span.session.id)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
