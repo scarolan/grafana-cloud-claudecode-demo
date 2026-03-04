@@ -46,29 +46,33 @@ This module is designed for **Windows workshop environments** with minimal depen
 
 ### **Students: Want Real-Time Tracing?**
 
-🤖 **[MCP-POWERED SETUP (RECOMMENDED) →](WORKSHOP_SETUP_MCP.md)**
+🚀 **[ULTIMATE DUMMY-PROOF SETUP →](WORKSHOP_SETUP_ULTIMATE.md)** ⭐ **RECOMMENDED**
 
-**The new hotness - Claude builds your dashboard live!**
-1. Install Python + clone repo
-2. Create Grafana service account
-3. Install MCP Grafana (`pip install mcp-grafana`)
-4. Add MCP server to Claude Code
-5. **Ask Claude: "Create me a tracing dashboard!"** 🤯
+**AI does 95% of the work for you!**
+1. Clone repo: `git clone ...`
+2. Run wizard: `python setup_wizard.py`
+3. Get 2 tokens (guided step-by-step)
+4. **Ask Claude: "Create me a tracing dashboard!"** 🤖✨
 
-📖 **[FALLBACK: Manual Setup →](WORKSHOP_SETUP.md)** *(if MCP doesn't work)*
+🤖 **[MCP Setup (Manual) →](WORKSHOP_SETUP_MCP.md)** *(if you want to configure everything yourself)*
+
+📖 **[Fallback: JSON Import →](WORKSHOP_SETUP.md)** *(if MCP doesn't work)*
 
 ### **Instructors: Workshop Ready**
 
-**MCP Edition (Recommended):**
-- Students ask Claude to build their dashboard live
-- Real-time co-creation of observability infrastructure
-- Claude explains TraceQL queries as it writes them
-- **Way more engaging** than importing static JSON
+**Ultimate Edition (Recommended):**
+- Students run ONE script → AI configures everything
+- 2-minute setup vs. 20-minute troubleshooting
+- Students focus on the cool stuff (AI building dashboards)
+- **Zero technical friction** killing the "wow" moment
 
-**Fallback Edition:**
-- Import `dashboards/claude-code-traces.json` manually
-- Works without MCP server setup
-- **Zero setup needed** for core workshop content
+**Setup flow:**
+1. "Who wants real-time tracing?" → Hands up
+2. "Clone repo, run the wizard" → 2 minutes later: ready
+3. "Ask Claude to build your dashboard" → Magic happens
+4. "Use Claude Code and watch traces" → Real-time observability
+
+**Fallback paths available** for any environment constraints
 
 ### **Advanced: Full Setup**
 
