@@ -180,9 +180,11 @@ def _extract_attrs(tool_name, tool_input):
         if tool_input.get("description"):
             attrs["tool.description"] = str(tool_input["description"])[:200]
 
-    # Common enrichment: input size and background flag
+    # Common enrichment: input size, estimated tokens, background flag
     try:
-        attrs["tool.input_size"] = len(json.dumps(tool_input))
+        input_bytes = len(json.dumps(tool_input))
+        attrs["tool.input_size"] = input_bytes
+        attrs["tool.estimated_input_tokens"] = input_bytes // 4
     except (TypeError, ValueError):
         pass
     if tool_input.get("run_in_background"):
@@ -231,15 +233,19 @@ def handle_post(hook_data, is_error=False):
             tool_input = {}
     attrs.update(_extract_attrs(tool_name, tool_input))
 
-    # Capture response size (available in both success and failure)
+    # Capture response size and estimated tokens
     tool_response = hook_data.get("tool_response", "")
     if isinstance(tool_response, dict):
         try:
-            attrs["tool.response_size"] = len(json.dumps(tool_response))
+            response_bytes = len(json.dumps(tool_response))
+            attrs["tool.response_size"] = response_bytes
+            attrs["tool.estimated_output_tokens"] = response_bytes // 4
         except (TypeError, ValueError):
             pass
     elif isinstance(tool_response, str):
-        attrs["tool.response_size"] = len(tool_response)
+        response_bytes = len(tool_response)
+        attrs["tool.response_size"] = response_bytes
+        attrs["tool.estimated_output_tokens"] = response_bytes // 4
 
     # Capture error message on failure
     if is_error:

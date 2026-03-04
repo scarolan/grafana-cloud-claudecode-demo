@@ -309,6 +309,80 @@
     {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 40 },
+      "id": 20,
+      "panels": [],
+      "title": "Estimated Token Usage",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "description": "Estimated input tokens per tool call (~4 chars/token)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
+      "id": 21,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span.tool.estimated_input_tokens) by(span.tool.name)",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "Estimated Input Tokens by Tool",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "description": "Estimated output tokens per tool call (~4 chars/token)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 41 },
+      "id": 22,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span.tool.estimated_output_tokens) by(span.tool.name)",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "Estimated Output Tokens by Tool",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 49 },
       "id": 12,
       "panels": [],
       "title": "Tool Payload & Execution Details",
@@ -331,7 +405,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 50 },
       "id": 13,
       "options": {
         "legend": { "displayMode": "list", "placement": "bottom" },
@@ -365,7 +439,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 41 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 50 },
       "id": 14,
       "options": {
         "legend": { "displayMode": "list", "placement": "bottom" },
@@ -393,7 +467,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 49 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 58 },
       "id": 15,
       "options": {
         "legend": { "displayMode": "list", "placement": "right" },
@@ -423,7 +497,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 49 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 58 },
       "id": 16,
       "options": {
         "legend": { "displayMode": "list", "placement": "right" },
@@ -441,6 +515,56 @@
       ],
       "title": "Tool Descriptions (What Claude Is Doing)",
       "type": "piechart"
+    },
+    {
+      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "description": "Average payload sizes over time — divide by 4 for rough token estimate",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "decbytes"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byFrameRefID", "options": "A" },
+            "properties": [{ "id": "displayName", "value": "Avg Input Size" }]
+          },
+          {
+            "matcher": { "id": "byFrameRefID", "options": "B" },
+            "properties": [{ "id": "displayName", "value": "Avg Output Size" }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 66 },
+      "id": 23,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "query": "{resource.service.name=\"claude-code\" && span.tool.input_size > 0} | avg_over_time(span.tool.input_size)",
+          "queryType": "traceql",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "query": "{resource.service.name=\"claude-code\" && span.tool.response_size > 0} | avg_over_time(span.tool.response_size)",
+          "queryType": "traceql",
+          "refId": "B"
+        }
+      ],
+      "title": "Payload Size Over Time",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",
