@@ -109,13 +109,23 @@ Just change `YOUR-STACK` and `glsa_YOUR_TOKEN_HERE`. Leave everything else as-is
 
 ---
 
-## Step 8: Start Claude and Build Your Dashboard
+## Step 8: Start Claude and Verify Setup
 
 ```
 claude
 ```
 
-Then ask:
+First, ask Claude to verify everything is configured correctly:
+
+> "Run the check-tracing-setup script and make sure everything looks good."
+
+Claude will run the self-check and fix any issues it finds.
+
+---
+
+## Step 9: Build Your Dashboard
+
+Once the check passes, ask:
 
 > "Create me a Claude Code tracing dashboard with tool usage patterns, performance metrics, and trace exploration."
 
