@@ -666,7 +666,16 @@
         }
       ],
       "title": "P95 Tool Latency",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": ".*span.tool.name=\"([^\"]+)\".*",
+            "renamePattern": "$1"
+          }
+        }
+      ]
     },
     {
       "datasource": {
