@@ -2,7 +2,6 @@
   "description": "Claude Code OpenTelemetry tracing dashboard - visualizes tool usage, performance, and session flows",
   "editable": true,
   "graphTooltip": 1,
-  "id": null,
   "panels": [
     {
       "datasource": {
@@ -29,44 +28,427 @@
       "type": "text"
     },
     {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 4 },
-      "id": 1,
-      "panels": [],
-      "title": "Claude Code Session Overview",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-      "description": "Total number of Claude Code tool calls over time",
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "Total tool calls in the selected time range",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" }
+          "color": {
+            "fixedColor": "purple",
+            "mode": "fixed"
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{ "color": "green" }]
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
-      "id": 2,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 4
+      },
+      "id": 30,
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "single" }
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
+          "query": "{resource.service.name=\"claude-code\"} | count_over_time()",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Calls",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "Average tool execution duration",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ns"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 4
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
+          "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span:duration)",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Duration",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "P95 tool execution duration",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "semi-dark-blue",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ns"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 4
+      },
+      "id": 32,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
+          "query": "{resource.service.name=\"claude-code\"} | quantile_over_time(span:duration, .95)",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "P95 Duration",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "Tool calls that resulted in errors",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 4
+      },
+      "id": 33,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
+          "query": "{resource.service.name=\"claude-code\" && span:status=error} | count_over_time()",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "Estimated input tokens (~4 chars/token)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 4
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
+          "query": "{resource.service.name=\"claude-code\"} | sum_over_time(span.tool.estimated_input_tokens)",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "Est. Input Tokens",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "Estimated output tokens (~4 chars/token)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "super-light-orange",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "super-light-orange",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 4
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
+          "query": "{resource.service.name=\"claude-code\"} | sum_over_time(span.tool.estimated_output_tokens)",
+          "queryType": "traceql",
+          "refId": "A"
+        }
+      ],
+      "title": "Est. Output Tokens",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Tool Usage Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
+      "description": "Total number of Claude Code tool calls over time",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 9
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\"} | rate() by(span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
@@ -76,65 +458,58 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-      "description": "Total tool calls by type",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": { "hideFrom": { "legend": false, "tooltip": false, "vis": false } },
-          "mappings": []
-        },
-        "overrides": []
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
-      "id": 3,
-      "options": {
-        "legend": { "displayMode": "list", "placement": "right" },
-        "pieType": "pie",
-        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
-        "tooltip": { "mode": "single" }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-          "query": "{resource.service.name=\"claude-code\"} | count_over_time() by(span.tool.name)",
-          "queryType": "traceql",
-          "refId": "A"
-        }
-      ],
-      "title": "Tool Call Count",
-      "type": "piechart"
-    },
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 },
-      "id": 4,
-      "panels": [],
-      "title": "Tool Usage Patterns",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
       "description": "Distribution of tool usage by type",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": { "hideFrom": { "legend": false, "tooltip": false, "vis": false } },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            }
+          },
           "mappings": []
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 9
+      },
       "id": 5,
       "options": {
-        "legend": { "displayMode": "list", "placement": "right", "showLegend": true },
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
         "pieType": "pie",
-        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
-        "tooltip": { "mode": "single" }
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\"} | count_over_time() by(span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
@@ -144,35 +519,61 @@
       "type": "piechart"
     },
     {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
       "description": "Average execution time by tool type",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "bars",
             "fillOpacity": 100,
             "showPoints": "never",
-            "stacking": { "group": "A", "mode": "none" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{ "color": "green" }]
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
           },
           "unit": "ns"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
       "id": 6,
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "single" }
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span:duration) by(span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
@@ -183,47 +584,82 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
       "id": 7,
       "panels": [],
       "title": "Performance & Errors",
       "type": "row"
     },
     {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
       "description": "P95 tool execution times",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
             "showPoints": "auto",
             "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green" },
-              { "color": "yellow", "value": 1000 },
-              { "color": "red", "value": 5000 }
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1000
+              },
+              {
+                "color": "red",
+                "value": 5000
+              }
             ]
           },
           "unit": "ns"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
       "id": 8,
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "single" }
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\"} | quantile_over_time(span:duration, .95) by(span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
@@ -233,19 +669,29 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
       "description": "Tool execution error rate",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
             "lineWidth": 2,
             "showPoints": "auto",
             "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "line" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
           },
           "mappings": [],
           "max": 1,
@@ -253,24 +699,46 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green" },
-              { "color": "yellow", "value": 0.01 },
-              { "color": "red", "value": 0.05 }
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
       "id": 9,
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "single" }
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\" && span:status=error} | rate()",
           "queryType": "traceql",
           "refId": "A"
@@ -281,64 +749,63 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
-      "id": 10,
-      "panels": [],
-      "title": "Session Deep Dive",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-      "description": "Recent Claude Code traces - click to explore",
-      "fieldConfig": { "defaults": {}, "overrides": [] },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
-      "id": 11,
-      "options": {},
-      "targets": [
-        {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-          "query": "{resource.service.name=\"claude-code\"}",
-          "queryType": "traceql",
-          "refId": "A",
-          "tableType": "traces"
-        }
-      ],
-      "title": "Recent Traces",
-      "type": "table"
-    },
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 40 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
       "id": 20,
       "panels": [],
       "title": "Estimated Token Usage",
       "type": "row"
     },
     {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
       "description": "Estimated input tokens per tool call (~4 chars/token)",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "bars",
             "fillOpacity": 80,
             "showPoints": "never",
-            "stacking": { "group": "A", "mode": "normal" }
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
       "id": 21,
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" },
-        "tooltip": { "mode": "multi" }
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span.tool.estimated_input_tokens) by(span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
@@ -348,30 +815,51 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
       "description": "Estimated output tokens per tool call (~4 chars/token)",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "bars",
             "fillOpacity": 80,
             "showPoints": "never",
-            "stacking": { "group": "A", "mode": "normal" }
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 41 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
       "id": 22,
       "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" },
-        "tooltip": { "mode": "multi" }
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span.tool.estimated_output_tokens) by(span.tool.name)",
           "queryType": "traceql",
           "refId": "A"
@@ -381,190 +869,104 @@
       "type": "timeseries"
     },
     {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 49 },
-      "id": 12,
-      "panels": [],
-      "title": "Tool Payload & Execution Details",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-      "description": "Average size of tool input payloads by tool type - proxy for request complexity",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "bars",
-            "fillOpacity": 80,
-            "showPoints": "never",
-            "stacking": { "group": "A", "mode": "normal" }
-          },
-          "mappings": [],
-          "unit": "decbytes"
-        },
-        "overrides": []
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 50 },
-      "id": 13,
-      "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" },
-        "tooltip": { "mode": "single" }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-          "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span.tool.input_size) by(span.tool.name)",
-          "queryType": "traceql",
-          "refId": "A"
-        }
-      ],
-      "title": "Avg Input Size by Tool",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-      "description": "Average size of tool response payloads by tool type - indicates output volume",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "bars",
-            "fillOpacity": 80,
-            "showPoints": "never",
-            "stacking": { "group": "A", "mode": "normal" }
-          },
-          "mappings": [],
-          "unit": "decbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 50 },
-      "id": 14,
-      "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" },
-        "tooltip": { "mode": "single" }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-          "query": "{resource.service.name=\"claude-code\"} | avg_over_time(span.tool.response_size) by(span.tool.name)",
-          "queryType": "traceql",
-          "refId": "A"
-        }
-      ],
-      "title": "Avg Response Size by Tool",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
       "description": "Most frequently accessed files across Claude Code sessions",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": { "hideFrom": { "legend": false, "tooltip": false, "vis": false } },
+          "color": {
+            "mode": "palette-classic"
+          },
           "mappings": []
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 58 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
       "id": 15,
       "options": {
-        "legend": { "displayMode": "list", "placement": "right" },
-        "pieType": "pie",
-        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
-        "tooltip": { "mode": "single" }
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\" && span.tool.file_path!=\"\"} | count_over_time() by(span.tool.file_path)",
           "queryType": "traceql",
           "refId": "A"
         }
       ],
       "title": "File Access Distribution",
-      "type": "piechart"
+      "type": "bargauge"
     },
     {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+      "datasource": {
+        "type": "tempo",
+        "uid": "${DS_TEMPO}"
+      },
       "description": "What Claude Code is doing - descriptions from Bash and Agent tool calls",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": { "hideFrom": { "legend": false, "tooltip": false, "vis": false } },
+          "color": {
+            "mode": "palette-classic"
+          },
           "mappings": []
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 58 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
       "id": 16,
       "options": {
-        "legend": { "displayMode": "list", "placement": "right" },
-        "pieType": "pie",
-        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
-        "tooltip": { "mode": "single" }
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
       },
       "targets": [
         {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
+          "datasource": {
+            "type": "tempo",
+            "uid": "${DS_TEMPO}"
+          },
           "query": "{resource.service.name=\"claude-code\" && span.tool.description!=\"\"} | count_over_time() by(span.tool.description)",
           "queryType": "traceql",
           "refId": "A"
         }
       ],
       "title": "Tool Descriptions (What Claude Is Doing)",
-      "type": "piechart"
-    },
-    {
-      "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-      "description": "Average payload sizes over time — divide by 4 for rough token estimate",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "auto"
-          },
-          "unit": "decbytes"
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byFrameRefID", "options": "A" },
-            "properties": [{ "id": "displayName", "value": "Avg Input Size" }]
-          },
-          {
-            "matcher": { "id": "byFrameRefID", "options": "B" },
-            "properties": [{ "id": "displayName", "value": "Avg Output Size" }]
-          }
-        ]
-      },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 66 },
-      "id": 23,
-      "options": {
-        "legend": { "displayMode": "list", "placement": "bottom" },
-        "tooltip": { "mode": "multi" }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-          "query": "{resource.service.name=\"claude-code\" && span.tool.input_size > 0} | avg_over_time(span.tool.input_size)",
-          "queryType": "traceql",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "tempo", "uid": "${DS_TEMPO}" },
-          "query": "{resource.service.name=\"claude-code\" && span.tool.response_size > 0} | avg_over_time(span.tool.response_size)",
-          "queryType": "traceql",
-          "refId": "B"
-        }
-      ],
-      "title": "Payload Size Over Time",
-      "type": "timeseries"
+      "type": "bargauge"
     }
   ],
   "refresh": "30s",
@@ -605,6 +1007,5 @@
   "timezone": "",
   "title": "Claude Code Tracing Dashboard",
   "uid": "claude-code-traces",
-  "version": 1,
   "weekStart": ""
 }
