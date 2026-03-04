@@ -2,6 +2,15 @@
 
 Get Claude Code tracing working in about 5 minutes.
 
+You'll create **two tokens** during setup. Here's why:
+
+| Token | Prefix | What it does | Where it goes |
+|-------|--------|--------------|---------------|
+| **Cloud API token** | `glc_` | Sends traces to Grafana Cloud | `.env` file |
+| **Service account token** | `glsa_` | Lets Claude build dashboards | `claude mcp add` command |
+
+These are separate auth systems — one talks to the OTLP gateway, the other talks to the Grafana API.
+
 ---
 
 ## Step 1: Install Python
@@ -21,9 +30,9 @@ Get Claude Code tracing working in about 5 minutes.
 
 ---
 
-## Step 3: Get Your OTLP Credentials (`glc_` token)
+## Step 3: Create Token 1 — Cloud API Token (`glc_`)
 
-This token lets `trace_hook.py` ship traces to Grafana Cloud. It's separate from the service account token in Step 6.
+This token lets the tracing hook send trace data to Grafana Cloud.
 
 1. Go to https://grafana.com and click **My Account**
 2. Find your stack and click **Configure** under the **OpenTelemetry** section
@@ -56,9 +65,9 @@ pip install opentelemetry-distro opentelemetry-exporter-otlp mcp-grafana
 
 ---
 
-## Step 6: Create a Grafana Service Account Token (`glsa_` token)
+## Step 6: Create Token 2 — Service Account Token (`glsa_`)
 
-This is a different token from Step 3. It lets Claude talk to the Grafana API to build dashboards.
+This token lets Claude query datasources and build dashboards via the Grafana API.
 
 1. Go to `https://YOUR-STACK.grafana.net/admin/serviceaccounts`
 2. Click **Add service account**
@@ -112,6 +121,6 @@ You can also run the setup checker:
 
 **"pip install failed"** — Try `py -m pip install ...` instead.
 
-**"MCP server connection failed"** — Check your service account token has Admin permissions. Make sure you used cmd, not PowerShell.
+**"MCP server connection failed"** — Check your `glsa_` service account token has Admin permissions. Make sure you used cmd, not PowerShell.
 
-**"No traces appearing"** — Check `.env` has the right credentials. Restart Claude Code after installing packages.
+**"No traces appearing"** — Check `.env` has the right `glc_` credentials. Restart Claude Code after installing packages.
