@@ -46,21 +46,28 @@ This module is designed for **Windows workshop environments** with minimal depen
 
 ### **Students: Want Real-Time Tracing?**
 
-📖 **[SUPER SIMPLE 5-MINUTE SETUP GUIDE →](WORKSHOP_SETUP.md)**
+🤖 **[MCP-POWERED SETUP (RECOMMENDED) →](WORKSHOP_SETUP_MCP.md)**
 
-**TL;DR:**
-1. Install Python (1 command)
-2. Copy your Grafana credentials to `.env`
-3. Install 2 packages (`pip install` command)
-4. Import dashboard
-5. **Start using Claude Code → see traces!** ✨
+**The new hotness - Claude builds your dashboard live!**
+1. Install Python + clone repo
+2. Create Grafana service account
+3. Install MCP Grafana (`pip install mcp-grafana`)
+4. Add MCP server to Claude Code
+5. **Ask Claude: "Create me a tracing dashboard!"** 🤯
+
+📖 **[FALLBACK: Manual Setup →](WORKSHOP_SETUP.md)** *(if MCP doesn't work)*
 
 ### **Instructors: Workshop Ready**
 
-The repository works **immediately** for demonstrations:
-- Import `dashboards/claude-code-traces.json`
-- Start Claude Code session
-- Show real-time traces (if Python installed)
+**MCP Edition (Recommended):**
+- Students ask Claude to build their dashboard live
+- Real-time co-creation of observability infrastructure
+- Claude explains TraceQL queries as it writes them
+- **Way more engaging** than importing static JSON
+
+**Fallback Edition:**
+- Import `dashboards/claude-code-traces.json` manually
+- Works without MCP server setup
 - **Zero setup needed** for core workshop content
 
 ### **Advanced: Full Setup**
@@ -119,9 +126,30 @@ bash check-tracing-setup.sh
 
 ---
 
+## 🤖 Why MCP Edition is Game-Changing
+
+**Old way:** "Import this JSON file, configure datasource, hope it works"
+**New way:** "Claude, build me a tracing dashboard!" → *Claude creates it live*
+
+### **What Makes This Amazing:**
+
+- **Co-creation**: Students watch Claude query datasources, write TraceQL, create panels
+- **Educational**: Claude explains every query and visualization choice
+- **Interactive**: "Add a panel for error rates" → Claude builds it instantly
+- **Iterative**: Dashboard evolves based on student questions and insights
+- **Real AI**: Not just traces OF AI tools, but AI tools BUILDING the observability
+
+**Students learn:**
+- How to talk to AI about observability requirements
+- TraceQL query language (by watching Claude write it)
+- Dashboard design principles (Claude explains choices)
+- Enterprise observability patterns (Claude implements best practices)
+
+---
+
 ## 🎯 Workshop Demo Flow
 
-### **Instructor Demonstration**
+### **Instructor Demonstration (MCP Edition)**
 
 Perfect for showing how **AI systems integrate with traditional observability**:
 
