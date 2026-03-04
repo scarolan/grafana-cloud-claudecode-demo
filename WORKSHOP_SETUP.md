@@ -7,7 +7,7 @@ You'll create **two tokens** during setup. Here's why:
 | Token | Prefix | What it does | Where it goes |
 |-------|--------|--------------|---------------|
 | **Cloud API token** | `glc_` | Sends traces to Grafana Cloud | `.env` file |
-| **Service account token** | `glsa_` | Lets Claude build dashboards | `claude mcp add` command |
+| **Service account token** | `glsa_` | Lets Claude build dashboards | `.mcp.json` file |
 
 These are separate auth systems — one talks to the OTLP gateway, the other talks to the Grafana API.
 
@@ -77,13 +77,27 @@ This token lets Claude query datasources and build dashboards via the Grafana AP
 
 ---
 
-## Step 7: Add the Grafana MCP Server to Claude
+## Step 7: Configure the Grafana MCP Server
 
-Run this in **cmd** (not PowerShell — PowerShell mangles the `--` separator):
+Open `.mcp.json` in the repo root and replace the two placeholder values with your stack URL and `glsa_` token:
 
+```json
+{
+  "mcpServers": {
+    "grafana": {
+      "type": "stdio",
+      "command": "mcp-grafana",
+      "args": ["--transport", "stdio"],
+      "env": {
+        "GRAFANA_URL": "https://YOUR-STACK.grafana.net",
+        "GRAFANA_API_KEY": "glsa_YOUR_TOKEN_HERE"
+      }
+    }
+  }
+}
 ```
-claude mcp add -t stdio -e GRAFANA_URL=https://YOUR-STACK.grafana.net -e GRAFANA_API_KEY=glsa_YOUR_TOKEN -- grafana mcp-grafana --transport stdio
-```
+
+Just change `YOUR-STACK` and `glsa_YOUR_TOKEN_HERE`. Leave everything else as-is.
 
 ---
 
@@ -121,6 +135,6 @@ You can also run the setup checker:
 
 **"pip install failed"** — Try `py -m pip install ...` instead.
 
-**"MCP server connection failed"** — Check your `glsa_` service account token has Admin permissions. Make sure you used cmd, not PowerShell.
+**"MCP server connection failed"** — Check your `glsa_` token in `.mcp.json` has Admin permissions. Make sure `mcp-grafana` is installed (`pip install mcp-grafana`).
 
 **"No traces appearing"** — Check `.env` has the right `glc_` credentials. Restart Claude Code after installing packages.

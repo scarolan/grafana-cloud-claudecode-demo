@@ -53,6 +53,7 @@ The Grafana MCP server lets Claude query your datasources and build dashboards l
 
 ```
 .claude/settings.json          # Hook configuration (activates tracing)
+.mcp.json                      # Grafana MCP server config (edit 2 values)
 trace_hook.py                  # OpenTelemetry instrumentation
 dashboards/claude-code-traces.json  # Grafana dashboard
 check-tracing-setup.sh         # Setup validator

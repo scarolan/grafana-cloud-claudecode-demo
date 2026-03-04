@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "grafana": {
+      "type": "stdio",
+      "command": "mcp-grafana",
+      "args": ["--transport", "stdio"],
+      "env": {
+        "GRAFANA_URL": "https://YOUR-STACK.grafana.net",
+        "GRAFANA_API_KEY": "glsa_YOUR_TOKEN_HERE"
+      }
+    }
+  }
+}

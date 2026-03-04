@@ -9,6 +9,7 @@ A workshop module that instruments Claude Code with OpenTelemetry tracing, sendi
 ```
 trace_hook.py                       # OpenTelemetry instrumentation (hooks into every tool call)
 .claude/settings.json               # Hook configuration (activates tracing automatically)
+.mcp.json                           # Grafana MCP server config (students edit 2 values)
 dashboards/claude-code-traces.json  # Grafana dashboard definition
 check-tracing-setup.sh              # Setup validator script
 .env.example                        # Credential template (OTLP gateway URL, instance ID, token)
