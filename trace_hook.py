@@ -136,6 +136,14 @@ def _find_event(session_id, tool_use_id):
 def _sanitize_path(p):
     if not p:
         return p
+    # Strip to project-relative path if inside CLAUDE_PROJECT_DIR
+    project_dir = os.environ.get(
+        "CLAUDE_PROJECT_DIR", os.path.dirname(os.path.abspath(__file__))
+    )
+    if project_dir and p.startswith(project_dir):
+        p = p[len(project_dir):].lstrip("/\\")
+        return p[:200] if p else "."
+    # Fall back to home-relative
     home = os.path.expanduser("~")
     if p.startswith(home):
         p = "~" + p[len(home):]
