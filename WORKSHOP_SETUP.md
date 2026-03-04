@@ -36,10 +36,15 @@ This token lets the tracing hook send trace data to Grafana Cloud.
 
 1. Go to https://grafana.com and click **My Account**
 2. Find your stack and click **Configure** under the **OpenTelemetry** section
-3. Copy the **OTLP endpoint URL** (looks like `https://otlp-gateway-prod-us-east-0.grafana.net/otlp`)
-4. Copy your **Instance ID** (a number like `860585`)
-5. Click **Generate now** to create an API token
-6. Copy the **token** (starts with `glc_`)
+3. Copy the **OTLP endpoint URL** and **Instance ID**:
+
+![OTLP endpoint URL and Instance ID](images/url_and_instance_id.png)
+
+4. Click **Generate now** to create an API token. Name it `claude-aws-workshop` and set expiration to **30 days**:
+
+![Create an API token](images/create_a_token.png)
+
+5. Copy the **token** (starts with `glc_`)
 
 ---
 
@@ -71,8 +76,11 @@ This token lets Claude query datasources and build dashboards via the Grafana AP
 
 1. Go to `https://YOUR-STACK.grafana.net/admin/serviceaccounts`
 2. Click **Add service account**
-3. Name: `claude-workshop`, Role: **Admin**
-4. Click **Add service account**, then **Add service account token**
+3. Name: `claude-code-mcp`, Role: **Admin**
+4. Click **Add service account**, then click **Add service account token**:
+
+![Add service account token](images/add_service_account_token.png)
+
 5. Copy the token (starts with `glsa_`)
 
 ---
