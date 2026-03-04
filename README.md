@@ -34,7 +34,7 @@ This module is designed for **Windows workshop environments** with minimal depen
 |------|----------|-------|
 | **Claude Code** | ✅ Yes | Pre-installed on workshop workstations |
 | **Git** | ✅ Yes | Available via Git Bash on Windows |
-| **Grafana Cloud account** | ✅ Yes | Provided during workshop setup |
+| **Grafana Cloud account** | ✅ Yes | Free tier at https://grafana.com |
 | **Python 3.8+** | 🎯 Optional | Only needed for real-time tracing |
 | **VS Code** | ✅ Yes | Pre-installed on workshop workstations |
 
@@ -88,13 +88,13 @@ cd grafana-cloud-claudecode-demo
 
 ### Step 2: Configure Your Grafana Cloud Stack
 
-Update `.env` with your workshop-provided Grafana Cloud credentials:
+Find your OTLP credentials at https://grafana.com → **My Account** → your stack → **Configure** (under OpenTelemetry). Update `.env`:
 
 ```bash
-# Your instructor will provide these values
-GRAFANA_CLOUD_TOKEN=glc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# From Grafana Cloud → OpenTelemetry configuration page
+GRAFANA_CLOUD_TOKEN=glc_your_token_here
 GRAFANA_OTLP_GATEWAY_URL=https://otlp-gateway-prod-us-east-0.grafana.net/otlp
-GRAFANA_OTLP_INSTANCE_ID=123456
+GRAFANA_OTLP_INSTANCE_ID=your_instance_id
 ```
 
 ### Step 3: Verify Setup
@@ -105,7 +105,7 @@ bash check-tracing-setup.sh
 
 ### Step 4: Import the Dashboard
 
-1. **Open your Grafana Cloud instance** (provided by instructor)
+1. **Open your Grafana Cloud instance** (`https://YOUR-STACK.grafana.net`)
 2. **Go to Dashboards** → **New** → **Import**
 3. **Upload** `dashboards/claude-code-traces.json`
 4. **Configure** your Tempo data source when prompted

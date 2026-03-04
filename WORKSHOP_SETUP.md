@@ -6,37 +6,39 @@
 
 ## Step 1: Install Python (2 minutes)
 
-### **Windows (Workshop Workstations):**
-
-1. **Open PowerShell** (search "PowerShell" in Start menu)
-2. **Copy and paste this command:**
-   ```powershell
-   winget install Python.Python.3.12
-   ```
-3. **Press Enter** and wait for installation
-4. **Close and reopen** PowerShell
-5. **Test it works:** Type `python --version` and press Enter
+1. **Go to:** https://www.python.org/downloads/
+2. **Click** the big **"Download Python 3.12"** button
+3. **Run the installer**
+4. **CHECK "Add Python to PATH"** (bottom of installer - this is critical!)
+5. **Click "Install Now"**
+6. **Close and reopen** your terminal
+7. **Test it works:** Type `python --version` and press Enter
 
 **Should see:** `Python 3.12.x`
 
-### **Alternative (if winget doesn't work):**
-
-1. **Go to:** https://www.python.org/downloads/
-2. **Click "Download Python 3.12"** (big yellow button)
-3. **Run the installer**
-4. **✅ IMPORTANT: Check "Add Python to PATH"**
-5. **Click "Install Now"**
-
 ---
 
-## Step 2: Get Your Grafana Cloud Credentials (1 minute)
+## Step 2: Get Your Grafana Cloud Credentials (2 minutes)
 
-**Your instructor will provide these values. Copy them exactly:**
+**You'll need your own free Grafana Cloud account.** Sign up at https://grafana.com if you haven't already.
 
+### Find your OTLP endpoint and instance ID:
+
+1. **Go to:** https://grafana.com → **My Account**
+2. **Find your stack** and click **Configure** under the OpenTelemetry section
+3. **Copy the OTLP endpoint URL** (looks like `https://otlp-gateway-prod-us-east-0.grafana.net/otlp`)
+4. **Copy your Instance ID** (a number like `860585`, shown on the same page)
+
+### Generate a Cloud API token:
+
+1. **On the same OpenTelemetry page**, click **Generate now** to create an API token
+2. **Copy the token** (starts with `glc_`)
+
+**You now have all three values:**
 ```
-GRAFANA_CLOUD_TOKEN=glc_xxxxxx...
+GRAFANA_CLOUD_TOKEN=glc_your_token_here
 GRAFANA_OTLP_GATEWAY_URL=https://otlp-gateway-prod-us-east-0.grafana.net/otlp
-GRAFANA_OTLP_INSTANCE_ID=123456
+GRAFANA_OTLP_INSTANCE_ID=your_instance_id
 ```
 
 ---
@@ -63,9 +65,9 @@ TRACE_MODE=direct
 
 ## Step 4: Install Tracing Packages (1 minute)
 
-1. **Open PowerShell** in your workshop folder
+1. **Open a terminal** in your workshop folder
    - In VS Code: **Terminal** → **New Terminal**
-   - Or navigate to the folder and **Shift+Right-click** → **Open PowerShell**
+   - Or open **cmd** and navigate to the folder
 
 2. **Copy and paste this command:**
    ```powershell
@@ -98,7 +100,7 @@ bash check-tracing-setup.sh
 
 ## Step 6: Import the Dashboard (30 seconds)
 
-1. **Open your Grafana Cloud** (instructor will provide URL)
+1. **Open your Grafana Cloud** (`https://YOUR-STACK.grafana.net`)
 2. **Go to:** Dashboards → New → Import
 3. **Click:** Upload dashboard JSON file
 4. **Select:** `dashboards/claude-code-traces.json`

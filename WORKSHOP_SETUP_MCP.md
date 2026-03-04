@@ -6,16 +6,13 @@
 
 ## Step 1: Install Python (2 minutes)
 
-### **Windows (Workshop Workstations):**
-
-1. **Open PowerShell** (search "PowerShell" in Start menu)
-2. **Copy and paste this command:**
-   ```powershell
-   winget install Python.Python.3.12
-   ```
-3. **Press Enter** and wait for installation
-4. **Close and reopen** PowerShell
-5. **Test it works:** Type `python --version` and press Enter
+1. **Go to:** https://www.python.org/downloads/
+2. **Click** the big **"Download Python 3.12"** button
+3. **Run the installer**
+4. **CHECK "Add Python to PATH"** (bottom of installer - this is critical!)
+5. **Click "Install Now"**
+6. **Close and reopen** your terminal
+7. **Test it works:** Type `python --version` and press Enter
 
 **Should see:** `Python 3.12.x`
 
@@ -30,12 +27,13 @@ cd grafana-cloud-claudecode-demo
 
 ---
 
-## Step 3: Configure Grafana Service Account (2 minutes)
+## Step 3: Create a Grafana Service Account Token (2 minutes)
 
-**You need admin powers in your Grafana Cloud stack:**
+**You need a service account token so Claude can talk to your Grafana instance:**
 
-1. **Open your Grafana Cloud** (instructor provides URL)
-2. **Go to:** Administration → Service Accounts → **Add service account**
+1. **Go to:** `https://YOUR-STACK.grafana.net/admin/serviceaccounts`
+   *(Replace `YOUR-STACK` with your actual stack name from https://grafana.com → My Account)*
+2. **Click:** Add service account
 3. **Name:** `claude-code-workshop`
 4. **Role:** `Admin` (or at least `Editor`)
 5. **Click:** Add service account
@@ -51,21 +49,15 @@ cd grafana-cloud-claudecode-demo
 ```bash
 # Install the Grafana MCP server
 pip install mcp-grafana
-
-# Add it to Claude Code (replace with your actual URL and token)
-claude mcp add -t stdio \
-  -e GRAFANA_URL=https://your-stack.grafana.net \
-  -e GRAFANA_API_KEY=glsa_your_actual_token_here \
-  -- grafana mcp-grafana --transport stdio
 ```
 
-**Example:**
-```bash
-claude mcp add -t stdio \
-  -e GRAFANA_URL=https://scdemo.grafana.net \
-  -e GRAFANA_API_KEY=glsa_your_actual_token_here_replace_this \
-  -- grafana mcp-grafana --transport stdio
+**Add the MCP server to Claude Code** (paste this as one line, replacing the URL and token):
+
 ```
+claude mcp add -t stdio -e GRAFANA_URL=https://YOUR-STACK.grafana.net -e GRAFANA_API_KEY=glsa_YOUR_TOKEN -- grafana mcp-grafana --transport stdio
+```
+
+**Important:** Use a plain `cmd` terminal on Windows, not PowerShell. PowerShell mangles the `--` separator and breaks the command.
 
 ---
 
@@ -77,17 +69,19 @@ pip install opentelemetry-distro opentelemetry-exporter-otlp
 
 ---
 
-## Step 6: Configure Your .env (1 minute)
+## Step 6: Configure Your .env (2 minutes)
 
-**Ask your instructor for the credentials, then:**
+**You need your OTLP credentials from Grafana Cloud:**
 
-1. **Copy `.env.example` to `.env`**
-2. **Edit `.env`** with real values:
+1. **Go to:** https://grafana.com → **My Account** → your stack → **Configure** (under OpenTelemetry)
+2. **Copy the OTLP endpoint URL** and **Instance ID** from that page
+3. **Generate an API token** by clicking **Generate now** on the same page
+4. **Copy `.env.example` to `.env`** and fill in your values:
 
 ```bash
-GRAFANA_CLOUD_TOKEN=glc_your_instructor_provided_token
+GRAFANA_CLOUD_TOKEN=glc_your_token_from_step_above
 GRAFANA_OTLP_GATEWAY_URL=https://otlp-gateway-prod-us-east-0.grafana.net/otlp
-GRAFANA_OTLP_INSTANCE_ID=your_instructor_provided_id
+GRAFANA_OTLP_INSTANCE_ID=your_instance_id
 TRACE_MODE=direct
 ```
 

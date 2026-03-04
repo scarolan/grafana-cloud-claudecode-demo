@@ -4,13 +4,27 @@
 
 ---
 
+## Prerequisites
+
+**Install Python** (if you don't have it already):
+1. **Go to:** https://www.python.org/downloads/
+2. **Download and run** the installer
+3. **CHECK "Add Python to PATH"** (critical!)
+4. **Verify:** Open a terminal and run `python --version`
+
+**Sign up for Grafana Cloud** (free tier works): https://grafana.com
+
+---
+
 ## The Only Manual Steps (2 tokens)
 
 **You literally only need to create 2 tokens. That's it.**
 
+*Find your stack name at https://grafana.com → My Account. Your Grafana URL is `https://YOUR-STACK.grafana.net`.*
+
 ### Step 1: Service Account Token
 
-1. **Go to:** https://scdemo.grafana.net/admin/serviceaccounts
+1. **Go to:** `https://YOUR-STACK.grafana.net/admin/serviceaccounts`
 2. **Click:** Add service account
 3. **Name:** `claude-workshop`
 4. **Role:** `Admin`
@@ -19,11 +33,9 @@
 
 ### Step 2: OTLP Token
 
-1. **Go to:** https://scdemo.grafana.net/settings/api-keys
-2. **Click:** Add API Key
-3. **Name:** `claude-otlp`
-4. **Role:** `Editor`
-5. **Copy the token** (starts with `glc_`)
+1. **Go to:** https://grafana.com → **My Account** → your stack → **Configure** (under OpenTelemetry)
+2. **Click:** **Generate now** to create an API token
+3. **Copy the token** (starts with `glc_`)
 
 ---
 
@@ -73,11 +85,8 @@ python setup_wizard.py
    ```
 
 4. **Configure Claude MCP** server:
-   ```bash
-   claude mcp add -t stdio \
-     -e GRAFANA_URL=https://scdemo.grafana.net \
-     -e GRAFANA_API_KEY=your_service_account_token \
-     -- grafana mcp-grafana --transport stdio
+   ```
+   claude mcp add -t stdio -e GRAFANA_URL=https://YOUR-STACK.grafana.net -e GRAFANA_API_KEY=your_service_account_token -- grafana mcp-grafana --transport stdio
    ```
 
 5. **Verify everything** works and give you the dashboard URL
