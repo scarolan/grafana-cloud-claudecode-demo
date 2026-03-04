@@ -98,7 +98,11 @@ Claude will query your datasources and build the dashboard live.
 2. Open your dashboard at `https://YOUR-STACK.grafana.net`
 3. Traces appear within ~30 seconds
 
-You can also run: `bash check-tracing-setup.sh`
+You can also run the setup checker:
+
+```
+"C:\Program Files\Git\bin\bash.exe" check-tracing-setup.sh
+```
 
 ---
 
