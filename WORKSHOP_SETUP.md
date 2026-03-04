@@ -21,9 +21,9 @@ Get Claude Code tracing working in about 5 minutes.
 
 ---
 
-## Step 3: Get Your OTLP Credentials
+## Step 3: Get Your OTLP Credentials (`glc_` token)
 
-These let the tracing hook send data to your Grafana Cloud instance.
+This token lets `trace_hook.py` ship traces to Grafana Cloud. It's separate from the service account token in Step 6.
 
 1. Go to https://grafana.com and click **My Account**
 2. Find your stack and click **Configure** under the **OpenTelemetry** section
@@ -56,9 +56,9 @@ pip install opentelemetry-distro opentelemetry-exporter-otlp mcp-grafana
 
 ---
 
-## Step 6: Create a Grafana Service Account Token
+## Step 6: Create a Grafana Service Account Token (`glsa_` token)
 
-This lets Claude talk to your Grafana instance to build dashboards.
+This is a different token from Step 3. It lets Claude talk to the Grafana API to build dashboards.
 
 1. Go to `https://YOUR-STACK.grafana.net/admin/serviceaccounts`
 2. Click **Add service account**
