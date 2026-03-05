@@ -76,7 +76,7 @@ This token lets Claude query datasources and build dashboards via the Grafana AP
 
 1. Go to `https://YOUR-STACK.grafana.net/admin/serviceaccounts`
 2. Click **Add service account**
-3. Name: `claude-code-mcp`, Role: **Admin**
+3. Name: `claude-code-mcp`, Role: **Editor**
 4. Click **Add service account**, then click **Add service account token**:
 
 ![Add service account token](images/add_service_account_token.png)
