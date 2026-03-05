@@ -2,6 +2,8 @@
 
 Instrument Claude Code with OpenTelemetry distributed tracing. Every tool call (Read, Write, Edit, Bash, etc.) becomes a trace span in Grafana Cloud.
 
+![Claude Code Tracing Dashboard](images/claude_code_dashboard.png)
+
 ## What You'll Learn
 
 - How to observe AI tooling with distributed tracing
