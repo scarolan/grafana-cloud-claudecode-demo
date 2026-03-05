@@ -36,24 +36,18 @@
   },
   "permissions": {
     "allow": [
-      "Bash(make *)",
-      "Bash(docker compose *)",
-      "Bash(terraform *)",
-      "Bash(chmod +x *)",
-      "Bash(./scripts/*)",
-      "Bash(bats *)",
-      "Bash(k6 *)",
-      "Bash(gh *)",
       "Bash(git *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(py *)",
+      "Bash(pip *)",
+      "Bash(pip3 *)",
+      "Bash(ls *)",
       "Bash(cp *)",
       "Bash(mkdir *)",
-      "Bash(ls *)",
-      "Bash(git -C:*)",
-      "Bash(git commit:*)",
-      "Bash(grep:*)",
-      "Bash(find:*)",
-      "Bash(python *)",
-      "Bash(pip *)"
+      "Bash(cat *)",
+      "Bash(type *)",
+      "Bash(\"C:\\Program Files\\Git\\bin\\bash.exe\" *)"
     ]
   }
 }
