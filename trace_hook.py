@@ -5,10 +5,16 @@ Claude Code Tracing Hook — OpenTelemetry Instrumentation
 Reads hook event JSON from stdin (Claude Code hook protocol), creates OTel spans
 for each tool call, and exports them to Grafana Cloud Tempo.
 
+All tool calls within a session share a single trace ID, with each tool call
+as a child span of a root session span. This gives a proper trace waterfall
+showing the full session flow.
+
 Hook events handled:
-  - PreToolUse:  Records start timestamp to temp file for duration calculation
-  - PostToolUse: Creates a span with tool attributes and sends it
-  - PostToolUseFailure: Same as PostToolUse but marks span as ERROR
+  - SessionStart:        Generates trace ID + root span ID, records session start time
+  - PreToolUse:          Records start timestamp to temp file for duration calculation
+  - PostToolUse:         Creates a child span parented to the session root
+  - PostToolUseFailure:  Same as PostToolUse but marks span as ERROR
+  - SessionEnd:          Creates the root session span covering the full session duration
 
 Usage: Automatically activated via .claude/settings.json hooks configuration.
 """
@@ -65,18 +71,24 @@ try:
     from opentelemetry.sdk.trace.export import SimpleSpanProcessor
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-    from opentelemetry.trace import StatusCode, SpanKind
+    from opentelemetry.trace import StatusCode, SpanKind, NonRecordingSpan, SpanContext, TraceFlags
+    from opentelemetry.sdk.trace.id_generator import IdGenerator
+    import opentelemetry.trace as trace_api
 except ImportError:
     sys.exit(0)
 
 # ---------------------------------------------------------------------------
-# Temp directory for cross-invocation state (PreToolUse → PostToolUse)
+# Temp directory for cross-invocation state
 # ---------------------------------------------------------------------------
 TRACES_DIR = os.path.join(tempfile.gettempdir(), "claude-traces")
 
 
 def _events_path(session_id):
     return os.path.join(TRACES_DIR, f"{session_id}_events.jsonl")
+
+
+def _session_path(session_id):
+    return os.path.join(TRACES_DIR, f"{session_id}_session.json")
 
 
 # ---------------------------------------------------------------------------
@@ -100,10 +112,75 @@ RESOURCE = Resource.create({
 })
 
 
-def _make_provider():
-    provider = TracerProvider(resource=RESOURCE)
+def _make_provider(id_generator=None):
+    kwargs = {"resource": RESOURCE}
+    if id_generator:
+        kwargs["id_generator"] = id_generator
+    provider = TracerProvider(**kwargs)
     provider.add_span_processor(SimpleSpanProcessor(_make_exporter()))
     return provider
+
+
+class _FixedIdGenerator(IdGenerator):
+    """Returns pre-determined trace and span IDs — used to give the session root span exact IDs."""
+    def __init__(self, trace_id_int, span_id_int):
+        self._trace_id = trace_id_int
+        self._span_id = span_id_int
+
+    def generate_trace_id(self):
+        return self._trace_id
+
+    def generate_span_id(self):
+        return self._span_id
+
+
+# ---------------------------------------------------------------------------
+# Session context: trace ID + root span ID persisted across hook invocations
+# ---------------------------------------------------------------------------
+def _new_span_id():
+    return os.urandom(8).hex()
+
+
+def _new_trace_id():
+    return os.urandom(16).hex()
+
+
+def _save_session(session_id, trace_id, root_span_id, start_ns):
+    os.makedirs(TRACES_DIR, exist_ok=True)
+    with open(_session_path(session_id), "w") as f:
+        json.dump({"trace_id": trace_id, "root_span_id": root_span_id, "start_ns": start_ns}, f)
+
+
+def _load_session(session_id):
+    path = _session_path(session_id)
+    if not os.path.isfile(path):
+        return None
+    with open(path) as f:
+        return json.load(f)
+
+
+def _update_session(session_id, **kwargs):
+    """Merge new fields into the session JSON without overwriting unrelated keys."""
+    path = _session_path(session_id)
+    data = {}
+    if os.path.isfile(path):
+        with open(path) as f:
+            data = json.load(f)
+    data.update(kwargs)
+    os.makedirs(TRACES_DIR, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f)
+
+
+def _make_parent_context(trace_id_hex, span_id_hex):
+    """Build an OTel context with an explicit parent span — used to attach tool spans to the session root."""
+    span_ctx = SpanContext(
+        trace_id=int(trace_id_hex, 16),
+        span_id=int(span_id_hex, 16),
+        is_remote=True,
+        trace_flags=TraceFlags(TraceFlags.SAMPLED),
+    )
+    return trace_api.set_span_in_context(NonRecordingSpan(span_ctx))
 
 
 # ---------------------------------------------------------------------------
@@ -136,14 +213,12 @@ def _find_event(session_id, tool_use_id):
 def _sanitize_path(p):
     if not p:
         return p
-    # Strip to project-relative path if inside CLAUDE_PROJECT_DIR
     project_dir = os.environ.get(
         "CLAUDE_PROJECT_DIR", os.path.dirname(os.path.abspath(__file__))
     )
     if project_dir and p.startswith(project_dir):
         p = p[len(project_dir):].lstrip("/\\")
         return p[:200] if p else "."
-    # Fall back to home-relative
     home = os.path.expanduser("~")
     if p.startswith(home):
         p = "~" + p[len(home):]
@@ -172,7 +247,6 @@ def _extract_attrs(tool_name, tool_input):
     if not isinstance(tool_input, dict):
         return attrs
 
-    # Tool-specific attributes
     if tool_name in ("Read", "Write"):
         attrs["tool.file_path"] = _sanitize_path(str(tool_input.get("file_path", "")))
     elif tool_name == "Edit":
@@ -188,7 +262,6 @@ def _extract_attrs(tool_name, tool_input):
         if tool_input.get("description"):
             attrs["tool.description"] = str(tool_input["description"])[:200]
 
-    # Common enrichment: input size, estimated tokens, background flag
     try:
         input_bytes = len(json.dumps(tool_input))
         attrs["tool.input_size"] = input_bytes
@@ -204,6 +277,63 @@ def _extract_attrs(tool_name, tool_input):
 # ---------------------------------------------------------------------------
 # Hook handlers
 # ---------------------------------------------------------------------------
+def handle_session_start(hook_data):
+    """Generate a trace ID and root span ID for this session and persist them."""
+    session_id = hook_data.get("session_id", "unknown")
+    _save_session(session_id, _new_trace_id(), _new_span_id(), time.time_ns())
+
+
+def _close_prompt_span(session, end_ns):
+    """Emit a completed prompt span using its stored start time and pre-assigned span ID.
+
+    The FixedIdGenerator ensures the span ID matches what tool child spans already
+    recorded as their parent, so the waterfall assembles correctly in Tempo.
+    """
+    id_gen = _FixedIdGenerator(
+        trace_id_int=int(session["trace_id"], 16),
+        span_id_int=int(session["prompt_span_id"], 16),
+    )
+    parent_ctx = _make_parent_context(session["trace_id"], session["root_span_id"])
+    provider = _make_provider(id_generator=id_gen)
+    try:
+        tracer = provider.get_tracer("claude-code-hooks")
+        span = tracer.start_span(
+            name="prompt",
+            kind=SpanKind.INTERNAL,
+            context=parent_ctx,
+            start_time=session["prompt_start_ns"],
+            attributes={"user.prompt": session["current_prompt"]},
+        )
+        span.set_status(StatusCode.OK)
+        span.end(end_time=end_ns)
+        provider.force_flush()
+    finally:
+        provider.shutdown()
+
+
+def handle_user_prompt(hook_data):
+    """UserPromptSubmit: close the previous prompt span (if any) and open a new one."""
+    session_id = hook_data.get("session_id", "unknown")
+    prompt = hook_data.get("prompt", "").strip()
+    if not prompt:
+        return
+    if len(prompt) > 500:
+        prompt = prompt[:497] + "..."
+
+    now_ns = time.time_ns()
+    session = _load_session(session_id)
+
+    # Close the prompt span from the previous turn now that we know its end time
+    if session and session.get("prompt_span_id"):
+        _close_prompt_span(session, end_ns=now_ns)
+
+    _update_session(session_id,
+        current_prompt=prompt,
+        prompt_span_id=_new_span_id(),
+        prompt_start_ns=now_ns,
+    )
+
+
 def handle_pre(hook_data):
     """PreToolUse: record start time for later duration calculation."""
     session_id = hook_data.get("session_id", "unknown")
@@ -215,24 +345,21 @@ def handle_pre(hook_data):
 
 
 def handle_post(hook_data, is_error=False):
-    """PostToolUse / PostToolUseFailure: create and export a span."""
+    """PostToolUse / PostToolUseFailure: create a child span under the session root."""
     session_id = hook_data.get("session_id", "unknown")
     tool_use_id = hook_data.get("tool_use_id", "")
     tool_name = hook_data.get("tool_name", "unknown")
 
-    # Look up the matching PreToolUse event for start time
     pre = _find_event(session_id, tool_use_id)
     start_ns = pre["start_ns"] if pre else time.time_ns()
     end_ns = time.time_ns()
 
-    # Build span attributes
     attrs = {
         "tool.name": tool_name,
         "tool.status": "error" if is_error else "ok",
         "session.id": session_id,
     }
 
-    # Parse tool_input for tool-specific attributes
     tool_input = hook_data.get("tool_input", {})
     if isinstance(tool_input, str):
         try:
@@ -241,7 +368,6 @@ def handle_post(hook_data, is_error=False):
             tool_input = {}
     attrs.update(_extract_attrs(tool_name, tool_input))
 
-    # Capture response size and estimated tokens
     tool_response = hook_data.get("tool_response", "")
     if isinstance(tool_response, dict):
         try:
@@ -255,31 +381,85 @@ def handle_post(hook_data, is_error=False):
         attrs["tool.response_size"] = response_bytes
         attrs["tool.estimated_output_tokens"] = response_bytes // 4
 
-    # Capture error message on failure
     if is_error:
         resp = tool_response
         if isinstance(resp, dict):
             resp = json.dumps(resp)
         attrs["tool.error"] = str(resp)[:500]
 
-    # Create provider, span, export, shutdown — all in one shot
+    session = _load_session(session_id)
+    if session and session.get("prompt_span_id"):
+        # Parent off the active prompt span — gives the 3-level waterfall:
+        # session → prompt → tool calls
+        parent_ctx = _make_parent_context(session["trace_id"], session["prompt_span_id"])
+    elif session:
+        parent_ctx = _make_parent_context(session["trace_id"], session["root_span_id"])
+    else:
+        parent_ctx = None
+    if session and session.get("current_prompt"):
+        attrs["user.prompt"] = session["current_prompt"]
+
     provider = _make_provider()
     try:
         tracer = provider.get_tracer("claude-code-hooks")
         span = tracer.start_span(
             name=f"tool:{tool_name}",
             kind=SpanKind.INTERNAL,
+            context=parent_ctx,
             start_time=start_ns,
             attributes=attrs,
         )
-        if is_error:
-            span.set_status(StatusCode.ERROR, attrs.get("tool.error", ""))
-        else:
-            span.set_status(StatusCode.OK)
+        span.set_status(StatusCode.ERROR, attrs.get("tool.error", "")) if is_error else span.set_status(StatusCode.OK)
         span.end(end_time=end_ns)
         provider.force_flush()
     finally:
         provider.shutdown()
+
+
+def handle_session_end(hook_data):
+    """Create the root session span covering the full session duration.
+
+    Uses a FixedIdGenerator so the span gets the exact trace_id and span_id
+    that were stored at SessionStart — making tool call spans proper children
+    in the Tempo waterfall.
+    """
+    session_id = hook_data.get("session_id", "unknown")
+    session = _load_session(session_id)
+    if not session:
+        return
+
+    end_ns = time.time_ns()
+    start_ns = session["start_ns"]
+
+    # Close the last prompt span before emitting the root session span
+    if session.get("prompt_span_id"):
+        _close_prompt_span(session, end_ns=end_ns)
+
+    id_gen = _FixedIdGenerator(
+        trace_id_int=int(session["trace_id"], 16),
+        span_id_int=int(session["root_span_id"], 16),
+    )
+    provider = _make_provider(id_generator=id_gen)
+    try:
+        tracer = provider.get_tracer("claude-code-hooks")
+        # No parent context — this span IS the root, and its IDs come from the generator.
+        span = tracer.start_span(
+            name="session",
+            kind=SpanKind.SERVER,
+            start_time=start_ns,
+            attributes={"session.id": session_id},
+        )
+        span.set_status(StatusCode.OK)
+        span.end(end_time=end_ns)
+        provider.force_flush()
+    finally:
+        provider.shutdown()
+
+    for path in [_session_path(session_id), _events_path(session_id)]:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
 
 
 # ---------------------------------------------------------------------------
@@ -296,13 +476,18 @@ def main():
 
     event = hook_data.get("hook_event_name", "")
 
-    if event == "PreToolUse":
+    if event == "SessionStart":
+        handle_session_start(hook_data)
+    elif event == "UserPromptSubmit":
+        handle_user_prompt(hook_data)
+    elif event == "PreToolUse":
         handle_pre(hook_data)
     elif event == "PostToolUse":
         handle_post(hook_data)
     elif event == "PostToolUseFailure":
         handle_post(hook_data, is_error=True)
-    # Other events (SessionStart, SessionEnd, etc.) — silently ignore
+    elif event == "SessionEnd":
+        handle_session_end(hook_data)
 
 
 if __name__ == "__main__":

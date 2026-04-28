@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Tracing — Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f1117;
+    color: #d4d4d4;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 40px 32px;
+    min-width: 900px;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: #6b7280;
+    font-size: 12px;
+    margin-bottom: 48px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Section headers ─────────────────────────────────────── */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 16px;
+  }
+
+  /* ── SECTION 1: Architecture ─────────────────────────────── */
+  .arch {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    margin-bottom: 56px;
+    align-items: center;
+  }
+
+  .arch-side {
+    background: #161b27;
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .arch-side-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #1f2937;
+  }
+
+  .component {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+  }
+
+  .component:last-child { margin-bottom: 0; }
+
+  .component.highlight {
+    background: #1a2035;
+    border-color: #2d3a56;
+  }
+
+  .component-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .icon-purple { background: #3b1f6e; }
+  .icon-orange { background: #7c3310; }
+  .icon-blue   { background: #0f3460; }
+  .icon-green  { background: #0f3a1a; }
+  .icon-gray   { background: #1f2937; }
+
+  .component-body {}
+
+  .component-name {
+    font-weight: 600;
+    color: #e5e7eb;
+    font-size: 13px;
+  }
+
+  .component-desc {
+    color: #6b7280;
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  /* ── Arrow column ────────────────────────────────────────── */
+  .arch-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px;
+  }
+
+  .arrow-label {
+    font-size: 10px;
+    color: #4b5563;
+    text-align: center;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  .arrow-line {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, #7c3aed, #f97316);
+    border-radius: 1px;
+    position: relative;
+  }
+
+  .arrow-line::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: -4px;
+    border: 5px solid transparent;
+    border-left-color: #f97316;
+  }
+
+  /* ── SECTION 2: Hook Event Lifecycle ─────────────────────── */
+  .lifecycle {
+    margin-bottom: 56px;
+  }
+
+  .lifecycle-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .hook-event {
+    flex: 1;
+    background: #161b27;
+    border: 1px solid #1f2937;
+    border-right: none;
+    padding: 14px 14px;
+    position: relative;
+  }
+
+  .hook-event:first-child { border-radius: 8px 0 0 8px; }
+  .hook-event:last-child  { border-radius: 0 8px 8px 0; border-right: 1px solid #1f2937; }
+
+  .hook-event::after {
+    content: '';
+    position: absolute;
+    right: -11px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 11px solid transparent;
+    border-bottom: 11px solid transparent;
+    border-left: 11px solid #1f2937;
+    z-index: 2;
+  }
+
+  .hook-event::before {
+    content: '';
+    position: absolute;
+    right: -9px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid #161b27;
+    z-index: 3;
+  }
+
+  .hook-event:last-child::after,
+  .hook-event:last-child::before { display: none; }
+
+  .hook-event-name {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .ev-session-start  { background: #1a2e1a; color: #4ade80; }
+  .ev-prompt-submit  { background: #1f2937; color: #818cf8; }
+  .ev-pre-tool       { background: #1a1f2e; color: #60a5fa; }
+  .ev-post-tool      { background: #0f2535; color: #38bdf8; }
+  .ev-session-end    { background: #2e1a1a; color: #f87171; }
+
+  .hook-action {
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.6;
+  }
+
+  .hook-action span {
+    display: block;
+    padding: 1px 0;
+  }
+
+  .hook-action .key { color: #e5e7eb; font-weight: 500; }
+  .hook-action .val { color: #6b7280; font-size: 10px; }
+
+  /* ── SECTION 3: Span Hierarchy ───────────────────────────── */
+  .spans {
+    margin-bottom: 56px;
+  }
+
+  .waterfall {
+    background: #161b27;
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+  }
+
+  .wf-labels { border-right: 1px solid #1f2937; padding-right: 20px; }
+  .wf-bars   { padding-left: 20px; display: flex; flex-direction: column; justify-content: space-around; }
+
+  .wf-row {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    gap: 8px;
+  }
+
+  .wf-indent-0 { padding-left: 0; }
+  .wf-indent-1 { padding-left: 18px; }
+  .wf-indent-2 { padding-left: 36px; }
+
+  .wf-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-session { background: #7c3aed; }
+  .dot-prompt  { background: #f97316; }
+  .dot-tool    { background: #38bdf8; }
+
+  .wf-name {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .wf-tag {
+    font-size: 10px;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  .wf-bar-row {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    position: relative;
+  }
+
+  .wf-bar {
+    height: 14px;
+    border-radius: 3px;
+    position: absolute;
+  }
+
+  .bar-session { background: linear-gradient(90deg, #7c3aed88, #7c3aed22); width: 100%; border: 1px solid #7c3aed55; }
+  .bar-p1      { background: linear-gradient(90deg, #f9731688, #f9731622); width: 56%; left: 0%; border: 1px solid #f9731655; }
+  .bar-p2      { background: linear-gradient(90deg, #f9731688, #f9731622); width: 38%; left: 58%; border: 1px solid #f9731655; }
+  .bar-bash    { background: #38bdf855; width: 18%; left: 2%; border: 1px solid #38bdf855; }
+  .bar-read    { background: #38bdf855; width: 14%; left: 22%; border: 1px solid #38bdf855; }
+  .bar-edit    { background: #38bdf855; width: 16%; left: 60%; border: 1px solid #38bdf855; }
+
+  .wf-duration {
+    font-size: 10px;
+    color: #4b5563;
+    position: absolute;
+    right: 0;
+    white-space: nowrap;
+  }
+
+  /* ── SECTION 4: State File ───────────────────────────────── */
+  .state-section {
+    margin-bottom: 48px;
+  }
+
+  .state-grid {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    align-items: center;
+  }
+
+  .state-box {
+    background: #161b27;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 11px;
+  }
+
+  .state-box-title {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #4b5563;
+    margin-bottom: 12px;
+  }
+
+  .json-key   { color: #818cf8; }
+  .json-str   { color: #86efac; }
+  .json-num   { color: #fb923c; }
+  .json-bool  { color: #f472b6; }
+  .json-punct { color: #6b7280; }
+
+  .state-arrow {
+    text-align: center;
+    color: #374151;
+    font-size: 20px;
+  }
+
+  .state-arrow-label {
+    font-size: 10px;
+    color: #4b5563;
+    margin-top: 4px;
+  }
+
+  /* ── Footer ──────────────────────────────────────────────── */
+  .footer {
+    border-top: 1px solid #1f2937;
+    padding-top: 20px;
+    display: flex;
+    gap: 32px;
+    color: #374151;
+    font-size: 11px;
+  }
+
+  .footer-item { display: flex; align-items: center; gap: 8px; }
+  .footer-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .connector-line {
+    width: 1px;
+    background: #1f2937;
+    height: 12px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>Claude Code Tracing — Demo Architecture</h1>
+<div class="subtitle">OpenTelemetry instrumentation via Claude Code hooks → Grafana Cloud Tempo</div>
+
+<!-- ── SECTION 1: Architecture ───────────────────────────────── -->
+<div class="section-label">System Architecture</div>
+<div class="arch">
+
+  <!-- Left: Developer workstation -->
+  <div class="arch-side">
+    <div class="arch-side-title">Developer Workstation</div>
+
+    <div class="component">
+      <div class="component-icon icon-purple">👤</div>
+      <div class="component-body">
+        <div class="component-name">Developer</div>
+        <div class="component-desc">Sends prompts, receives responses</div>
+      </div>
+    </div>
+
+    <div style="width:1px; height:10px; background:#1f2937; margin: 2px 13px;"></div>
+
+    <div class="component highlight">
+      <div class="component-icon icon-purple">🤖</div>
+      <div class="component-body">
+        <div class="component-name">Claude Code CLI</div>
+        <div class="component-desc">Processes prompts, calls tools, fires hook events</div>
+      </div>
+    </div>
+
+    <div style="width:1px; height:10px; background:#1f2937; margin: 2px 13px;"></div>
+
+    <div class="component highlight">
+      <div class="component-icon icon-gray">⚙️</div>
+      <div class="component-body">
+        <div class="component-name">.claude/settings.json</div>
+        <div class="component-desc">Registers hooks for SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, SessionEnd</div>
+      </div>
+    </div>
+
+    <div style="width:1px; height:10px; background:#1f2937; margin: 2px 13px;"></div>
+
+    <div class="component highlight">
+      <div class="component-icon icon-blue">🐍</div>
+      <div class="component-body">
+        <div class="component-name">trace_hook.py</div>
+        <div class="component-desc">Reads hook JSON from stdin · manages session state · builds OTel spans · exports via OTLP/HTTP</div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top: 8px; padding: 0 4px;">
+      <div style="flex:1; background:#161b27; border:1px solid #1f2937; border-radius:6px; padding:8px 10px;">
+        <div style="font-size:10px; color:#4b5563; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px;">State Files</div>
+        <div style="font-size:10px; color:#6b7280;">/tmp/claude-traces/</div>
+        <div style="font-size:10px; color:#9ca3af;">{session}_session.json</div>
+        <div style="font-size:10px; color:#9ca3af;">{session}_events.jsonl</div>
+      </div>
+      <div style="flex:1; background:#161b27; border:1px solid #1f2937; border-radius:6px; padding:8px 10px;">
+        <div style="font-size:10px; color:#4b5563; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px;">Credentials</div>
+        <div style="font-size:10px; color:#9ca3af;">.env</div>
+        <div style="font-size:10px; color:#6b7280;">OTLP gateway URL</div>
+        <div style="font-size:10px; color:#6b7280;">Instance ID + token</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arch-arrow">
+    <div class="arrow-label">OTLP/HTTP<br>Basic Auth</div>
+    <div class="arrow-line"></div>
+  </div>
+
+  <!-- Right: Grafana Cloud -->
+  <div class="arch-side">
+    <div class="arch-side-title">Grafana Cloud</div>
+
+    <div class="component highlight">
+      <div class="component-icon icon-orange">🌐</div>
+      <div class="component-body">
+        <div class="component-name">OTLP Gateway</div>
+        <div class="component-desc">otlp-gateway-prod-us-west-0.grafana.net — receives spans over HTTPS</div>
+      </div>
+    </div>
+
+    <div style="width:1px; height:10px; background:#1f2937; margin: 2px 13px;"></div>
+
+    <div class="component highlight">
+      <div class="component-icon icon-orange">🔍</div>
+      <div class="component-body">
+        <div class="component-name">Grafana Tempo</div>
+        <div class="component-desc">Stores and indexes traces · queryable via TraceQL · datasource UID: grafanacloud-traces</div>
+      </div>
+    </div>
+
+    <div style="width:1px; height:10px; background:#1f2937; margin: 2px 13px;"></div>
+
+    <div class="component highlight">
+      <div class="component-icon icon-orange">📊</div>
+      <div class="component-body">
+        <div class="component-name">Grafana Dashboards</div>
+        <div class="component-desc">
+          <strong style="color:#d97706;">Overview</strong> — tool usage, rates, token estimates<br>
+          <strong style="color:#d97706;">Deep Dive</strong> — P50/P95/P99, errors, trace explorer
+        </div>
+      </div>
+    </div>
+
+    <div style="width:1px; height:10px; background:#1f2937; margin: 2px 13px;"></div>
+
+    <div class="component">
+      <div class="component-icon icon-green">🔌</div>
+      <div class="component-body">
+        <div class="component-name">Grafana MCP Server</div>
+        <div class="component-desc">Lets Claude query datasources and build dashboards live from the conversation</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── SECTION 2: Hook Event Lifecycle ──────────────────────── -->
+<div class="section-label">Hook Event Lifecycle</div>
+<div class="lifecycle">
+  <div class="lifecycle-flow">
+
+    <div class="hook-event">
+      <div class="hook-event-name ev-session-start">SessionStart</div>
+      <div class="hook-action">
+        <span class="key">Generate</span>
+        <span class="val">trace_id (128-bit)</span>
+        <span class="val">root_span_id (64-bit)</span>
+        <span class="key">Save</span>
+        <span class="val">session.json</span>
+      </div>
+    </div>
+
+    <div class="hook-event">
+      <div class="hook-event-name ev-prompt-submit">UserPromptSubmit</div>
+      <div class="hook-action">
+        <span class="key">Close prev prompt span</span>
+        <span class="val">(if any)</span>
+        <span class="key">Generate</span>
+        <span class="val">prompt_span_id</span>
+        <span class="key">Save</span>
+        <span class="val">current_prompt</span>
+      </div>
+    </div>
+
+    <div class="hook-event">
+      <div class="hook-event-name ev-pre-tool">PreToolUse</div>
+      <div class="hook-action">
+        <span class="key">Record</span>
+        <span class="val">start_ns</span>
+        <span class="val">tool_use_id</span>
+        <span class="key">Append</span>
+        <span class="val">events.jsonl</span>
+      </div>
+    </div>
+
+    <div class="hook-event">
+      <div class="hook-event-name ev-post-tool">PostToolUse</div>
+      <div class="hook-action">
+        <span class="key">Load</span>
+        <span class="val">session + start_ns</span>
+        <span class="key">Emit span</span>
+        <span class="val">parent = prompt_span_id</span>
+        <span class="val">attrs: tool.name, user.prompt…</span>
+      </div>
+    </div>
+
+    <div class="hook-event">
+      <div class="hook-event-name ev-session-end">SessionEnd</div>
+      <div class="hook-action">
+        <span class="key">Close last prompt span</span>
+        <span class="key">Emit root session span</span>
+        <span class="val">via FixedIdGenerator</span>
+        <span class="key">Cleanup temp files</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── SECTION 3: Span Hierarchy ────────────────────────────── -->
+<div class="section-label">Trace Span Hierarchy</div>
+<div class="spans">
+  <div class="waterfall">
+
+    <!-- Labels -->
+    <div class="wf-labels">
+      <div class="wf-row wf-indent-0">
+        <div class="wf-dot dot-session"></div>
+        <div>
+          <div class="wf-name" style="color:#a78bfa;">session</div>
+          <div class="wf-tag">root · SpanKind.SERVER · FixedIdGenerator</div>
+        </div>
+      </div>
+      <div class="wf-row wf-indent-1">
+        <div class="wf-dot dot-prompt"></div>
+        <div>
+          <div class="wf-name" style="color:#fb923c;">prompt</div>
+          <div class="wf-tag">"List the files in this repo"</div>
+        </div>
+      </div>
+      <div class="wf-row wf-indent-2">
+        <div class="wf-dot dot-tool"></div>
+        <div>
+          <div class="wf-name" style="color:#38bdf8;">tool:Bash</div>
+          <div class="wf-tag">tool.command · tool.input_size</div>
+        </div>
+      </div>
+      <div class="wf-row wf-indent-2">
+        <div class="wf-dot dot-tool"></div>
+        <div>
+          <div class="wf-name" style="color:#38bdf8;">tool:Read</div>
+          <div class="wf-tag">tool.file_path · tool.response_size</div>
+        </div>
+      </div>
+      <div class="wf-row wf-indent-1">
+        <div class="wf-dot dot-prompt"></div>
+        <div>
+          <div class="wf-name" style="color:#fb923c;">prompt</div>
+          <div class="wf-tag">"Now edit the README"</div>
+        </div>
+      </div>
+      <div class="wf-row wf-indent-2">
+        <div class="wf-dot dot-tool"></div>
+        <div>
+          <div class="wf-name" style="color:#38bdf8;">tool:Edit</div>
+          <div class="wf-tag">tool.file_path · user.prompt</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bars -->
+    <div class="wf-bars">
+      <div class="wf-bar-row"><div class="wf-bar bar-session"></div><div class="wf-duration">4.3s</div></div>
+      <div class="wf-bar-row"><div class="wf-bar bar-p1"></div><div class="wf-duration">2.2s</div></div>
+      <div class="wf-bar-row"><div class="wf-bar bar-bash"></div><div class="wf-duration">291ms</div></div>
+      <div class="wf-bar-row"><div class="wf-bar bar-read"></div><div class="wf-duration">291ms</div></div>
+      <div class="wf-bar-row"><div class="wf-bar bar-p2"></div><div class="wf-duration">1.9s</div></div>
+      <div class="wf-bar-row"><div class="wf-bar bar-edit"></div><div class="wf-duration">323ms</div></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── SECTION 4: Session State ──────────────────────────────── -->
+<div class="section-label">Session State (persisted across hook invocations)</div>
+<div class="state-section">
+  <div class="state-grid">
+
+    <div class="state-box">
+      <div class="state-box-title">After SessionStart + first UserPromptSubmit</div>
+      <span class="json-punct">{</span><br>
+      &nbsp;&nbsp;<span class="json-key">"trace_id"</span><span class="json-punct">:</span> <span class="json-str">"3b7d0b9f…"</span><span class="json-punct">,</span><br>
+      &nbsp;&nbsp;<span class="json-key">"root_span_id"</span><span class="json-punct">:</span> <span class="json-str">"61258c1c…"</span><span class="json-punct">,</span><br>
+      &nbsp;&nbsp;<span class="json-key">"start_ns"</span><span class="json-punct">:</span> <span class="json-num">1777240670…</span><span class="json-punct">,</span><br>
+      &nbsp;&nbsp;<span class="json-key">"current_prompt"</span><span class="json-punct">:</span> <span class="json-str">"List the files…"</span><span class="json-punct">,</span><br>
+      &nbsp;&nbsp;<span class="json-key">"prompt_span_id"</span><span class="json-punct">:</span> <span class="json-str">"a1b2c3d4…"</span><span class="json-punct">,</span><br>
+      &nbsp;&nbsp;<span class="json-key">"prompt_start_ns"</span><span class="json-punct">:</span> <span class="json-num">1777240671…</span><br>
+      <span class="json-punct">}</span>
+    </div>
+
+    <div style="text-align:center; padding: 0 8px;">
+      <div style="font-size: 18px; color: #374151;">→</div>
+      <div style="font-size: 10px; color: #4b5563; margin-top:4px; line-height:1.4;">next<br>UserPromptSubmit<br>or SessionEnd</div>
+    </div>
+
+    <div class="state-box">
+      <div class="state-box-title">After second UserPromptSubmit</div>
+      <span class="json-punct">{</span><br>
+      &nbsp;&nbsp;<span class="json-key">"trace_id"</span><span class="json-punct">:</span> <span class="json-str">"3b7d0b9f…"</span><span class="json-punct">,</span> <span style="color:#374151; font-size:10px;">← unchanged</span><br>
+      &nbsp;&nbsp;<span class="json-key">"root_span_id"</span><span class="json-punct">:</span> <span class="json-str">"61258c1c…"</span><span class="json-punct">,</span><br>
+      &nbsp;&nbsp;<span class="json-key">"start_ns"</span><span class="json-punct">:</span> <span class="json-num">1777240670…</span><span class="json-punct">,</span><br>
+      &nbsp;&nbsp;<span class="json-key">"current_prompt"</span><span class="json-punct">:</span> <span class="json-str">"Now edit the README"</span><span class="json-punct">,</span> <span style="color:#f97316; font-size:10px;">← updated</span><br>
+      &nbsp;&nbsp;<span class="json-key">"prompt_span_id"</span><span class="json-punct">:</span> <span class="json-str">"e5f6a7b8…"</span><span class="json-punct">,</span> <span style="color:#f97316; font-size:10px;">← new</span><br>
+      &nbsp;&nbsp;<span class="json-key">"prompt_start_ns"</span><span class="json-punct">:</span> <span class="json-num">1777240673…</span> <span style="color:#f97316; font-size:10px;">← new</span><br>
+      <span class="json-punct">}</span>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<div class="footer">
+  <div class="footer-item">
+    <div class="footer-dot" style="background:#7c3aed;"></div>
+    session span — root, SpanKind.SERVER
+  </div>
+  <div class="footer-item">
+    <div class="footer-dot" style="background:#f97316;"></div>
+    prompt span — child of session, one per user message
+  </div>
+  <div class="footer-item">
+    <div class="footer-dot" style="background:#38bdf8;"></div>
+    tool span — child of prompt, SpanKind.INTERNAL
+  </div>
+  <div class="footer-item" style="margin-left: auto;">
+    <span style="color:#4b5563;">service.name =</span>&nbsp;<code style="color:#818cf8; font-size:11px;">claude-code</code>
+  </div>
+</div>
+
+</body>
+</html>

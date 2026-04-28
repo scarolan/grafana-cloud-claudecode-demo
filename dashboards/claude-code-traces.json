@@ -1,5 +1,5 @@
 {
-  "description": "Claude Code OpenTelemetry tracing dashboard - visualizes tool usage, performance, and session flows",
+  "description": "Workshop overview dashboard — high-level tool usage, performance stats, and token estimates. Start here. For deep-dive latency percentiles and trace exploration, see Claude Code Tracing — Deep Dive.",
   "editable": true,
   "graphTooltip": 1,
   "panels": [
@@ -1014,7 +1014,17 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Claude Code Tracing Dashboard",
+  "title": "Claude Code Tracing — Overview",
   "uid": "claude-code-traces",
-  "weekStart": ""
+  "weekStart": "",
+  "links": [
+    {
+      "title": "Deep Dive →",
+      "type": "link",
+      "url": "/d/claude-code-traces-v2",
+      "targetBlank": false,
+      "icon": "external link",
+      "tooltip": "P50/P95/P99 latency, error analysis, and trace exploration"
+    }
+  ]
 }
